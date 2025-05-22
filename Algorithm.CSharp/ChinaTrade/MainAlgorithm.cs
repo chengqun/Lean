@@ -33,7 +33,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
         private ISignalGenerator _signalGenerator;
         private IRiskManager _riskManager;
         private IOrderExecutor _orderExecutor;
-        private Dictionary<Symbol, MacdAnalysis> _macdAnalysis = new Dictionary<Symbol, MacdAnalysis>();
+        private Dictionary<Symbol, MainAnalysis> _macdAnalysis = new Dictionary<Symbol, MainAnalysis>();
         public override void Initialize()
         {
             SetStartDate(2024, 1, 1);
@@ -78,7 +78,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                     var symbol = AddData<ApiDayCustomData>(code, Resolution.Daily, TimeZones.Utc).Symbol;
                     var macd = MACD(symbol, 12, 26, 9, MovingAverageType.Exponential, Resolution.Daily);
                     var closeIdentity = Identity(symbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
-                    var macdAnalysis = new MacdAnalysis(macd, closeIdentity, name, industry);
+                    var macdAnalysis = new MainAnalysis(macd, closeIdentity, name, industry);
                     _macdAnalysis.Add(symbol, macdAnalysis); // 初始化字典中的每个Symbol的值为null
                     if (LiveMode)
                     {                 // 预热MACD和收盘价指标
@@ -107,7 +107,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                 }
             }
             // 只在循环外创建一次实例
-            _macdAnalysis[symbol] = new MacdAnalysis(macd, closeIdentity,name,industry);
+            _macdAnalysis[symbol] = new MainAnalysis(macd, closeIdentity,name,industry);
             Debug($"预热完成 - MACD.IsReady: {macd.IsReady}, CloseIdentity.IsReady: {closeIdentity.IsReady}");
         }
 

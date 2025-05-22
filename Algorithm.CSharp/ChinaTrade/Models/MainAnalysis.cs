@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
 {
-    public class MacdAnalysis
+    public class MainAnalysis
     {
         public string Name { get; private set; }
         public string Industry { get; private set; } 
@@ -60,7 +60,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         // 新增字段：20日收益率分位数
         public decimal TwentyDayReturnQuantile { get; private set; }
 
-        public MacdAnalysis(MovingAverageConvergenceDivergence macd, IndicatorBase<IndicatorDataPoint> closeIdentity,string name ,string industry)
+        public MainAnalysis(MovingAverageConvergenceDivergence macd, IndicatorBase<IndicatorDataPoint> closeIdentity,string name ,string industry)
         {
             Name = name;
             Industry = industry;
@@ -127,53 +127,47 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
                 {
                     TwentyDayReturnQuantile = 0;
                 }
+                // 增加空值检查，避免空引用异常
+                if (Macd.Current == null || Macd.Signal.Current == null)
+                {
+                    IsUpperGoldenCross = false;
+                    IsUpperDeathCross = false;
+                    IsLowerGoldenCross = false;
+                    IsLowerDeathCross = false;
+                    IsGoldenCross = false;
+                    IsDeathCross = false;
+                    return;
+                }
                 // 设置置信度
-                const decimal tolerance = 0.0025m;
-                decimal fast = Macd.Fast;
-                decimal delta = (Macd.Current.Value - Macd.Signal.Current.Value) / (fast != 0 ? fast : 1);
-                bool isSignificant = Math.Abs(fast) > 0.0001m;
-                decimal prevDelta = Macd[1] != null && Macd.Signal[1] != null ? (Macd[1].Value - Macd.Signal[1].Value) / (fast != 0 ? fast : 1) : 0;
-
+                const decimal tolerance = 0.0125m;
+                // 不除快线，直接计算当前差值
+                decimal delta = Macd.Current.Value - Macd.Signal.Current.Value;
+                decimal prevDelta = 0;
+                if (Macd.Samples > 1 && Macd[1] != null && Macd.Signal[1] != null)
+                {
+                    // 不除快线，直接计算上一个差值
+                    prevDelta = Macd[1].Value - Macd.Signal[1].Value;
+                }
                 // 检测金叉：MACD从下向上穿越信号线 ，0轴上方
-                IsUpperGoldenCross = Macd.Samples > 1 &&
-                                isSignificant &&
-                                delta > tolerance &&
-                                prevDelta <= tolerance
-                                ;
-
+                IsUpperGoldenCross =delta > tolerance &&
+                                    prevDelta <= tolerance;
                 // 检测死叉：MACD从上向下穿越信号线 ，0轴上方
-                IsUpperDeathCross = Macd.Samples > 1 &&
-                                isSignificant &&
-                                delta < tolerance &&
-                                prevDelta >= tolerance
-                                ;
-
+                IsUpperDeathCross = delta < tolerance &&
+                                    prevDelta >= tolerance;
                 // 检测金叉：MACD从下向上穿越信号线 ，0轴下方
-                IsLowerGoldenCross = Macd.Samples > 1 &&
-                                isSignificant &&
-                                delta > -tolerance &&
-                                prevDelta <= -tolerance
-                                ;
+                IsLowerGoldenCross =delta > -tolerance &&
+                                    prevDelta <= -tolerance;
                 // 检测死叉：MACD从上向下穿越信号线 ，0轴下方
-                IsLowerDeathCross = Macd.Samples > 1 &&
-                                isSignificant &&
-                                delta < -tolerance &&
-                                prevDelta >= -tolerance
-                                ;
-
+                IsLowerDeathCross = delta < -tolerance &&
+                                    prevDelta >= -tolerance;
                 // 检测金叉：MACD从下向上穿越信号线
-                IsGoldenCross = Macd.Samples > 1 &&
-                                Macd.Current.Value > Macd.Signal.Current.Value &&
-                                Macd[1] != null && Macd.Signal[1] != null &&
-                                Macd[1].Value <= Macd.Signal[1].Value;
-
+                IsGoldenCross = delta > 0 &&
+                                prevDelta <= 0 
+                                ;
                 // 检测死叉：MACD从上向下穿越信号线
-                IsDeathCross = Macd.Samples > 1 &&
-                               Macd.Current.Value < Macd.Signal.Current.Value &&
-                               Macd[1] != null && Macd.Signal[1] != null &&
-                               Macd[1].Value >= Macd.Signal[1].Value;
-                
-
+                IsDeathCross = delta < 0 &&
+                                prevDelta >= 0
+                                ;
                 // 检测顶背离：价格创新高但MACD未创新高
                 IsBearishDivergence = false;
                 if (CloseIdentity.Samples > 2 && Macd.Samples > 2)

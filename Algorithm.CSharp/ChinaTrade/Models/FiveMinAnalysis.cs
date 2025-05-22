@@ -66,10 +66,17 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         public IndicatorBase<IndicatorDataPoint> DayCloseIdentity { get; }
         public decimal DayKLineReturn { get; private set; }
 
+        //指数数据
+        public MovingAverageConvergenceDivergence BenchmarkMacd { get; }
+        public IndicatorBase<IndicatorDataPoint> BenchmarkCloseIdentity { get; }
+        public decimal BenchmarkKLineReturn { get; private set; }
         // 传入分钟线数据和日线数据
         public FiveMinAnalysis(MovingAverageConvergenceDivergence macd, IndicatorBase<IndicatorDataPoint> closeIdentity,string name ,string industry,
-        MovingAverageConvergenceDivergence daymacd, IndicatorBase<IndicatorDataPoint> daycloseIdentity)
+        MovingAverageConvergenceDivergence daymacd, IndicatorBase<IndicatorDataPoint> daycloseIdentity,
+        MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<IndicatorDataPoint> benchmarkcloseIdentity
+        )
         {
+            //分钟数据
             Name = name;
             Industry = industry;
             Macd = macd;
@@ -79,6 +86,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             CloseIdentity.Updated += OnCloseIdentityUpdated;
             // 初始化时尝试更新状态
             UpdateStatus();
+
+
             // 传入日线数据
             DayMacd = daymacd;
             DayCloseIdentity = daycloseIdentity;
@@ -87,8 +96,41 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             DayCloseIdentity.Updated += OnDayCloseIdentityUpdated;
             // 初始化时尝试更新状态
             UpdateDayStatus();
-        }
 
+            //指数数据
+            BenchmarkMacd = benchmarkmacd;
+            BenchmarkCloseIdentity = benchmarkcloseIdentity;
+            // 订阅指数指标更新事件，当指标有新数据时自动更新状态
+            BenchmarkMacd.Updated += OnBenchmarkMacdUpdated;
+            BenchmarkCloseIdentity.Updated += OnBenchmarkCloseIdentityUpdated;
+            // 初始化时尝试更新状态
+            UpdateBenchmarkStatus();
+        }
+        private void OnBenchmarkMacdUpdated(object sender, IndicatorDataPoint updated)
+        {
+            UpdateBenchmarkStatus();
+        }
+        private void OnBenchmarkCloseIdentityUpdated(object sender, IndicatorDataPoint updated)
+        {
+            UpdateBenchmarkStatus();
+        }
+        private void UpdateBenchmarkStatus()
+        {
+            try
+            {
+                var macdValue = BenchmarkMacd.Current?.Value ?? 0;
+                var closePrice = BenchmarkCloseIdentity.Current?.Value ?? 0;
+                var previousClosePrice = BenchmarkCloseIdentity.Samples > 1 ? BenchmarkCloseIdentity[1]?.Value ?? 0 : 0;
+                var previousMacdValue = BenchmarkMacd.Samples > 1 ? BenchmarkMacd[1]?.Value ?? 0 : 0;
+
+                // 计算K线收益率  
+                BenchmarkKLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
+            }
+            catch (NullReferenceException ex)
+            {
+                Console.WriteLine($"MacdAnalysis.UpdateStatus方法中发生空引用异常: {ex.Message}");
+            }
+        }
         private void UpdateDayStatus()
         {
             try

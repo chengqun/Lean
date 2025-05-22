@@ -11,9 +11,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
 {
     public class SignalGenerator : ISignalGenerator
     {
-        private readonly Dictionary<Symbol, MacdAnalysis> _macdAnalysis;
+        private readonly Dictionary<Symbol, MainAnalysis> _macdAnalysis;
 
-        public SignalGenerator(Dictionary<Symbol, MacdAnalysis> macdAnalysis)
+        public SignalGenerator(Dictionary<Symbol, MainAnalysis> macdAnalysis)
         {
             _macdAnalysis = macdAnalysis;
         }
@@ -58,19 +58,40 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                         // 这里模拟调用模型
                         var score = 0.78m;
                         var OperationReson = "";
-                        // 这里模拟调用模型
+                        // // 这里模拟调用模型
                         if (macdAnalysis.IsLowerGoldenCross)
                         {
                             score = 0.92m;
                             OperationReson += "低位金叉";
                         }
-                        // 卖出条件保持相对简单
+                        // 这里模拟调用模型
+                        if (macdAnalysis.IsLowerDeathCross)
+                        {
+                            score = 0.1m;
+                            OperationReson += "低位死叉";
+                        }
+                        if (macdAnalysis.IsGoldenCross)
+                        {
+                            score = 0.92m;
+                            OperationReson += "金叉";
+                        }
+                        // 这里模拟调用模型
+                        if (macdAnalysis.IsDeathCross)
+                        {
+                            score = 0.1m;
+                            OperationReson += "死叉";
+                        }
+                        if (macdAnalysis.IsUpperGoldenCross)
+                        {
+                            score = 0.92m;
+                            OperationReson += "高位金叉";
+                        }
                         if (macdAnalysis.IsUpperDeathCross)
                         {
                             score = 0.1m;
                             OperationReson += "高位死叉";
                         }
-
+                        
                         var direction = score > 0.9m ? OrderDirection.Buy :
                                         score < 0.2m ? OrderDirection.Sell :
                                         OrderDirection.Hold;

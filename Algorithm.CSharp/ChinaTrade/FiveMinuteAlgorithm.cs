@@ -46,9 +46,6 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
             SetTimeZone(TimeZones.Utc);
             // 设置手续费模型
             SetBrokerageModel(new AStockBrokerageModel());
-            // 设置benchmark
-            var benchmarkSymbol = AddData<ApiDayCustomData>("sh.000001", Resolution.Daily, TimeZones.Utc).Symbol;
-            SetBenchmark(benchmarkSymbol);
             // 初始化数据
             InitializeData();
             // 初始化模块
@@ -72,7 +69,38 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                 var partItems = gupiao.Skip(part * size).Take(size).ToList();
                 var singlePartItems = jsonData.Where(x => x.Name.ToString() == "陕西煤业").ToList();
 
-                foreach (var item in partItems)
+                // 行业指数
+                // 设置benchmark
+                var benchmarkSymbol = AddData<ApiDayCustomData>("sh.000001", Resolution.Daily, TimeZones.Utc).Symbol;
+                SetBenchmark(benchmarkSymbol);
+
+                var benchmarkmacd = MACD(benchmarkSymbol, 12, 26, 9, MovingAverageType.Exponential, Resolution.Daily);
+                var benchmarkcloseIdentity = Identity(benchmarkSymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
+                if (LiveMode)
+                {
+                    // 预热MACD和收盘价指标
+                    // day的指标
+                    var requiredBars = 12600 + 9;
+                    var benchdayhistory = History<ApiDayCustomData>("sh.000001", requiredBars * 2, Resolution.Daily);
+                    if (benchdayhistory == null ||!benchdayhistory.Any())
+                    {
+                        Debug("无法获取历史数据用于预热");
+                        return;
+                    }
+                    Debug($"获取到 {benchdayhistory.Count()} 条历史数据用于预热");
+                    foreach (var bar in benchdayhistory.OrderBy(x => x.Time))
+                    {   
+                        benchmarkmacd.Update(bar.Time, bar.Close);
+                        if (bar is ApiDayCustomData customData)
+                        {
+                            benchmarkcloseIdentity.Update(bar.EndTime, customData.Close);
+                        }
+                    }
+                    Debug($"预热完成 - benchmarkmacd.IsReady: {benchmarkmacd.IsReady}, benchmarkcloseIdentity.IsReady: {benchmarkcloseIdentity.IsReady}");
+
+                }
+
+                foreach (var item in singlePartItems)
                 {
                     var code = item.Code.ToString();
                     // 日线收盘价指标
@@ -85,20 +113,22 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                     var macd = MACD(symbol, 12, 26, 9, MovingAverageType.Exponential, Resolution.Minute);
                     var closeIdentity = Identity(symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Close));
 
-                    var macdAnalysis = new FiveMinAnalysis(macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daymacd,daycloseIdentity);
+                    var macdAnalysis = new FiveMinAnalysis(macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daymacd,daycloseIdentity,benchmarkmacd,benchmarkcloseIdentity);
 
                     _macdAnalysis.Add(symbol, macdAnalysis);
                     if (LiveMode)
                     {
                         // 预热MACD和收盘价指标
-                        WarmUpIndicators(symbol, macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daysymbol, daymacd, daycloseIdentity);
+                        WarmUpIndicators(symbol, macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daysymbol, daymacd, daycloseIdentity,benchmarkmacd,benchmarkcloseIdentity);
                     }
                 }
             }
         }
 
         private void WarmUpIndicators(Symbol symbol,MovingAverageConvergenceDivergence macd, IndicatorBase<Indicators.IndicatorDataPoint> closeIdentity,string name,string industry,
-        Symbol daysymbol,MovingAverageConvergenceDivergence daymacd, IndicatorBase<Indicators.IndicatorDataPoint> daycloseIdentity)
+        Symbol daysymbol,MovingAverageConvergenceDivergence daymacd, IndicatorBase<Indicators.IndicatorDataPoint> daycloseIdentity,
+        MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<Indicators.IndicatorDataPoint> benchmarkcloseIdentity
+        )
         {
             // 计算MACD所需最小数据量(26周期+9信号线)
             var requiredBars = 12600 + 9;
@@ -136,7 +166,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                 }
             }
             // 只在循环外创建一次实例
-            _macdAnalysis[symbol] = new FiveMinAnalysis(macd, closeIdentity,name,industry,daymacd,daycloseIdentity);
+            _macdAnalysis[symbol] = new FiveMinAnalysis(macd, closeIdentity,name,industry,daymacd,daycloseIdentity,benchmarkmacd,benchmarkcloseIdentity);
             Debug($"预热完成 - daymacd.IsReady: {daymacd.IsReady}, daycloseIdentity.IsReady: {daycloseIdentity.IsReady}");
         }
 
