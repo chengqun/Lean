@@ -107,19 +107,19 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                     var daysymbol = AddData<ApiDayCustomData>(code, Resolution.Daily, TimeZones.Utc).Symbol;
                     var daymacd = MACD(daysymbol, 12, 26, 9, MovingAverageType.Exponential, Resolution.Daily);
                     var daycloseIdentity = Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
-
+                    var daynextopenIdentity = Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).NextOpen));
                     // 5min指标
                     var symbol = AddData<Api5MinCustomData>(code, Resolution.Minute, TimeZones.Utc).Symbol;
                     var macd = MACD(symbol, 12, 26, 9, MovingAverageType.Exponential, Resolution.Minute);
                     var closeIdentity = Identity(symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Close));
 
-                    var macdAnalysis = new FiveMinAnalysis(macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daymacd,daycloseIdentity,benchmarkmacd,benchmarkcloseIdentity);
+                    var macdAnalysis = new FiveMinAnalysis(macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity);
 
                     _macdAnalysis.Add(symbol, macdAnalysis);
                     if (LiveMode)
                     {
                         // 预热MACD和收盘价指标
-                        WarmUpIndicators(symbol, macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daysymbol, daymacd, daycloseIdentity,benchmarkmacd,benchmarkcloseIdentity);
+                        WarmUpIndicators(symbol, macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daysymbol, daymacd, daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity);
                     }
                 }
             }
@@ -127,6 +127,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
 
         private void WarmUpIndicators(Symbol symbol,MovingAverageConvergenceDivergence macd, IndicatorBase<Indicators.IndicatorDataPoint> closeIdentity,string name,string industry,
         Symbol daysymbol,MovingAverageConvergenceDivergence daymacd, IndicatorBase<Indicators.IndicatorDataPoint> daycloseIdentity,
+        IndicatorBase<Indicators.IndicatorDataPoint> daynextopenIdentity,
         MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<Indicators.IndicatorDataPoint> benchmarkcloseIdentity
         )
         {
@@ -163,10 +164,11 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                 if (bar is ApiDayCustomData customData)
                 {
                     daycloseIdentity.Update(bar.EndTime, customData.Close);
+                    daynextopenIdentity.Update(bar.EndTime, customData.NextOpen);
                 }
             }
             // 只在循环外创建一次实例
-            _macdAnalysis[symbol] = new FiveMinAnalysis(macd, closeIdentity,name,industry,daymacd,daycloseIdentity,benchmarkmacd,benchmarkcloseIdentity);
+            _macdAnalysis[symbol] = new FiveMinAnalysis(macd, closeIdentity,name,industry,daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity);
             Debug($"预热完成 - daymacd.IsReady: {daymacd.IsReady}, daycloseIdentity.IsReady: {daycloseIdentity.IsReady}");
         }
 

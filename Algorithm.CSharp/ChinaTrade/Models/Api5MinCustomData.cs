@@ -32,6 +32,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         
         [JsonProperty("StrategyName")]
         public string StrategyName;
+
         public override DateTime EndTime { get; set; }
         public override SubscriptionDataSource GetSource(
             SubscriptionDataConfig config,

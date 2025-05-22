@@ -37,6 +37,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         public MovingAverageConvergenceDivergence Macd { get; }
         public IndicatorBase<IndicatorDataPoint> CloseIdentity { get; }
 
+
         // 0轴下方置信度金叉
         public bool IsLowerGoldenCross { get; private set; }
         // 0轴下方置信度死叉
@@ -64,8 +65,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         //日线数据
         public MovingAverageConvergenceDivergence DayMacd { get; }
         public IndicatorBase<IndicatorDataPoint> DayCloseIdentity { get; }
-        public decimal DayKLineReturn { get; private set; }
+        public IndicatorBase<IndicatorDataPoint> DayNextOpenIdentity { get; }
 
+        public decimal DayKLineReturn { get; private set; }
+        public decimal DayNextOpenReturn { get; private set; }
         //指数数据
         public MovingAverageConvergenceDivergence BenchmarkMacd { get; }
         public IndicatorBase<IndicatorDataPoint> BenchmarkCloseIdentity { get; }
@@ -73,6 +76,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         // 传入分钟线数据和日线数据
         public FiveMinAnalysis(MovingAverageConvergenceDivergence macd, IndicatorBase<IndicatorDataPoint> closeIdentity,string name ,string industry,
         MovingAverageConvergenceDivergence daymacd, IndicatorBase<IndicatorDataPoint> daycloseIdentity,
+        IndicatorBase<IndicatorDataPoint> daynextopenIdentity,
         MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<IndicatorDataPoint> benchmarkcloseIdentity
         )
         {
@@ -91,9 +95,11 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             // 传入日线数据
             DayMacd = daymacd;
             DayCloseIdentity = daycloseIdentity;
+            DayNextOpenIdentity = daynextopenIdentity;
             // 订阅日线指标更新事件，当指标有新数据时自动更新状态
             DayMacd.Updated += OnDayMacdUpdated;
             DayCloseIdentity.Updated += OnDayCloseIdentityUpdated;
+            DayNextOpenIdentity.Updated += OnDayCloseIdentityUpdated;
             // 初始化时尝试更新状态
             UpdateDayStatus();
 
@@ -137,11 +143,12 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             {
                 var macdValue = DayMacd.Current?.Value ?? 0;
                 var closePrice = DayCloseIdentity.Current?.Value ?? 0;
+                var nextOpenPrice = DayNextOpenIdentity.Current?.Value?? 0;
                 var previousClosePrice = DayCloseIdentity.Samples > 1 ? DayCloseIdentity[1]?.Value ?? 0 : 0;
                 var previousMacdValue = DayMacd.Samples > 1 ? DayMacd[1]?.Value ?? 0 : 0;
-
                 // 计算K线收益率  
                 DayKLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
+                DayNextOpenReturn = closePrice!=0?(nextOpenPrice - closePrice)/closePrice :0; // 今日开盘
             }
             catch (NullReferenceException ex)
             {

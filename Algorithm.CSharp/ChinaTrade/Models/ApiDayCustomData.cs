@@ -33,21 +33,25 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         [JsonProperty("StrategyName")]
         public string StrategyName;
 
+        [JsonProperty("NextOpen")]
+        public decimal NextOpen;
         public override DateTime EndTime { get; set; }
         public override SubscriptionDataSource GetSource(
             SubscriptionDataConfig config,
             DateTime date,
             bool isLiveMode)
         {
+                        // 添加毫秒级时间戳参数
+            var timestamp = DateTime.UtcNow.Ticks;
             if (isLiveMode)
             {
                 return new SubscriptionDataSource(
-                    $"http://43.142.139.247/api/dayapi/{config.Symbol.Value}",
+                    $"http://43.142.139.247/api/dayapi/{config.Symbol.Value}?_t={timestamp}",
                     SubscriptionTransportMedium.Rest);
             }
             // 返回的是一个csv，正常历史数据只用请求一次呀。
             return new SubscriptionDataSource(
-                $"http://43.142.139.247/api/dayapi/csv/{config.Symbol.Value}",
+                $"http://43.142.139.247/api/dayapi/csv/{config.Symbol.Value}?_t={timestamp}",
                 SubscriptionTransportMedium.RemoteFile);
         }
 
@@ -86,7 +90,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
                     Low = Convert.ToDecimal(csv[4]),
                     Volume = Convert.ToDecimal(csv[5]),
                     Amount = Convert.ToDecimal(csv[6]),
-                    StrategyName = csv[7]
+                    StrategyName = csv[7],
+                    NextOpen = string.IsNullOrEmpty(csv[8]) ? Convert.ToDecimal(csv[2]) : Convert.ToDecimal(csv[8]),
                 };
                 var a = DateTime.ParseExact(data.Date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
                 var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(config.ExchangeTimeZone.Id);
