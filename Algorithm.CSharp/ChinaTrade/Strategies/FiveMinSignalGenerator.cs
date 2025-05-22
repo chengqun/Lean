@@ -49,29 +49,23 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                     var macdAnalysis = _macdAnalysis[symbol];
                     if (macdAnalysis != null && macdAnalysis.Macd.IsReady && macdAnalysis.CloseIdentity.IsReady)
                     {
-                        System.Console.WriteLine($"{macdAnalysis.Name},{macdAnalysis.Industry} 时间: {time}, 收盘价: {closePrice}, MACD: {macdAnalysis.Macd.Current.Value}, 收盘价: {macdAnalysis.CloseIdentity.Current.Value}, " +
-                            $"{(macdAnalysis.IsGoldenCross ? "金叉" : "false")},  {(macdAnalysis.IsDeathCross ? "死叉" : "false")}, " +
-                            $"{(macdAnalysis.IsBullishDivergence ? "底背离" : "false")}, {(macdAnalysis.IsBearishDivergence ? "顶背离" : "false")}, " +
-                            $"K线收益率: {macdAnalysis.KLineReturn}, 20日收益率分位数: {macdAnalysis.TwentyDayReturnQuantile}"+
-                            $"日K线收益率: {macdAnalysis.DayKLineReturn}" +
-                            $"指数收益率: {macdAnalysis.BenchmarkKLineReturn}"+
-                            $"今日开盘涨幅:{macdAnalysis.DayNextOpenReturn}"
-                            );
+                        // System.Console.WriteLine($"{macdAnalysis.Name},{macdAnalysis.Industry} 时间: {time}, 收盘价: {closePrice}, MACD: {macdAnalysis.Macd.Current.Value}, 收盘价: {macdAnalysis.CloseIdentity.Current.Value}, " +
+                        //     $"{(macdAnalysis.IsGoldenCross ? "金叉" : "false")},  {(macdAnalysis.IsDeathCross ? "死叉" : "false")}, " +
+                        //     $"{(macdAnalysis.IsBullishDivergence ? "底背离" : "false")}, {(macdAnalysis.IsBearishDivergence ? "顶背离" : "false")}, " +
+                        //     $"K线收益率: {macdAnalysis.KLineReturn}, 20日收益率分位数: {macdAnalysis.TwentyDayReturnQuantile}"+
+                        //     $"日K线收益率: {macdAnalysis.DayKLineReturn}" +
+                        //     $"指数收益率: {macdAnalysis.BenchmarkKLineReturn}"+
+                        //     $"今日开盘涨幅:{macdAnalysis.DayNextOpenReturn}"
+                        //     );
                             
                         // 这里模拟调用模型
                         var score = 0.78m;
                         var OperationReson = "";
                         // 这里模拟调用模型
-                        if (macdAnalysis.IsLowerGoldenCross)
+                        if (macdAnalysis.DayNextOpenReturn > 0.05m)
                         {
                             score = 0.92m;
-                            OperationReson += "低位金叉";
-                        }
-                        // 卖出条件保持相对简单
-                        if (macdAnalysis.IsUpperDeathCross)
-                        {
-                            score = 0.1m;
-                            OperationReson += "高位死叉";
+                            OperationReson += "高开买入";
                         }
 
                         var direction = score > 0.9m ? OrderDirection.Buy :
