@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using QLNet;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation;
@@ -14,7 +15,6 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
     public class FiveMinSignalGenerator : ISignalGenerator
     {
         private readonly Dictionary<Symbol, FiveMinAnalysis> _macdAnalysis;
-
         public FiveMinSignalGenerator(Dictionary<Symbol, FiveMinAnalysis> macdAnalysis)
         {
             _macdAnalysis = macdAnalysis;
@@ -23,12 +23,12 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
             TimeZoneInfo.ConvertTimeFromUtc(
                 DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 
                 TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"));
-        public async Task<IEnumerable<TradingSignal>> GenerateSignalsAsync(Slice data)
+
+        public IEnumerable<TradingSignal> GenerateSignals(Slice data)
         {
             var signals = new List<TradingSignal>();
             if (data == null) return signals;
-            var storage = new SQLiteDataStorage<RealDataItem>();
-            var saveitems = new List<RealDataItem>();
+            // var saveitems = new List<RealDataItem>();
             foreach (var symbol in _macdAnalysis.Keys)
             {
                 if (!data.ContainsKey(symbol)) continue;
@@ -67,24 +67,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 存储今日开盘涨幅
                             DayNextOpenReturn = macdAnalysis.DayNextOpenReturn
                         };
-                        saveitems.Add(item);
-                        // try
-                        // {
-                        //     int result = await storage.SaveItemAsync(item); 
-                        //     if (result > 0) 
-                        //     { 
-                        //         Console.WriteLine("数据保存成功"); 
-                        //     } 
-                        //     else 
-                        //     { 
-                        //         Console.WriteLine("数据保存失败，可能是数据库写入错误或数据格式不匹配。"); 
-                        //     } 
-                        // }
-                        // catch (Exception ex)
-                        // {
-                        //     Console.WriteLine($"数据保存失败，发生异常: {ex.Message}");
-                        // }
-                        // 这里模拟调用模型
+                        // 将数据项添加到队列中
+                        GlobalRealDataItemList.Items.Add(item);
+
+                        
                         var score = 0.78m;
                         var OperationReson = "";
                         // 这里模拟调用模型
@@ -97,15 +83,16 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                         var direction = score > 0.9m ? OrderDirection.Buy :
                                         score < 0.2m ? OrderDirection.Sell :
                                         OrderDirection.Hold;
-                                                                        
-                            signals.Add(new TradingSignal {
-                                Symbol = symbol,
-                                Direction = direction,
-                                //操作名称
-                                OperationReson = OperationReson,
-                                SuggestedPrice = currentData.Close,
-                                SignalTime = time
-                            });
+
+                        signals.Add(new TradingSignal
+                        {
+                            Symbol = symbol,
+                            Direction = direction,
+                            //操作名称
+                            OperationReson = OperationReson,
+                            SuggestedPrice = currentData.Close,
+                            SignalTime = time
+                        });
                     }
                     else
                     {
@@ -117,25 +104,6 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                     System.Console.WriteLine($"OnData方法中发生空引用异常: {ex.Message}");
                 }
             }
-
-            // // 批量保存数据到数据库
-            // try
-            // {
-            //     int result = await storage.SaveItemsAsync(saveitems);
-            //     if (result > 0)
-            //     {
-            //         Console.WriteLine("数据批量保存成功");
-            //     }
-            //     else
-            //     {
-            //         Console.WriteLine("数据批量保存失败，可能是数据库写入错误或数据格式不匹配。");
-            //     }
-            // }
-            // catch (Exception ex)
-            // {
-            //     Console.WriteLine($"数据批量保存失败，发生异常: {ex.Message}");
-            // }
-            // 嘿嘿，这个地方可以批量保存
 
             return signals;
         }

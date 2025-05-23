@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -115,5 +116,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public decimal DayKLineReturn { get; set; }
         public decimal BenchmarkKLineReturn { get; set; }
         public decimal DayNextOpenReturn { get; set; }
+    }
+
+    public static class GlobalRealDataItemList
+    {
+        public static readonly List<RealDataItem> Items = new List<RealDataItem>();
     }
 }

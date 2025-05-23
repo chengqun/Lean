@@ -21,6 +21,7 @@ using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Orders;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Risk;
+using QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies;
 using QuantConnect.Data;
 using QuantConnect.Indicators;
@@ -98,7 +99,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                     }
                     Debug($"预热完成 - benchmarkmacd.IsReady: {benchmarkmacd.IsReady}, benchmarkcloseIdentity.IsReady: {benchmarkcloseIdentity.IsReady}");
                 }
-                foreach (var item in singlePartItems)
+                foreach (var item in partItems)
                 {
                     var code = item.Code.ToString();
                     // 日线收盘价指标
@@ -170,10 +171,17 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
             Debug($"预热完成 - daymacd.IsReady: {daymacd.IsReady}, daycloseIdentity.IsReady: {daycloseIdentity.IsReady}");
         }
 
+        //添加 OnEndOfAlgorithm
+        public override void OnEndOfAlgorithm()
+        {
+            // 这里可以使用 SQLiteDataStorage 类来进行批量写入
+            var db = new SQLiteDataStorage<RealDataItem>();
+            db.SaveItemsAsync(GlobalRealDataItemList.Items).Wait();
+        }
         public override async void OnData(Slice data)
         {
             // 生成交易信号
-            var signals =await _signalGenerator.GenerateSignalsAsync(data);
+            var signals = _signalGenerator.GenerateSignals(data);
             // 检查风险
             var risks = _riskManager.CheckRisks(Portfolio);
             // 执行订单
