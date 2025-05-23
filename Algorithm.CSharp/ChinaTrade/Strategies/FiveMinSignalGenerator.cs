@@ -19,20 +19,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
         {
             _macdAnalysis = macdAnalysis;
         }
-        public DateTime ParseShanghaiTime(string dateString)
-        {
-            try
-            {
-                return TimeZoneInfo.ConvertTimeFromUtc(
-                    DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
-                    TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"));
-            }
-            catch (NullReferenceException ex)
-            {
-                System.Console.WriteLine($"解析上海时间时发生空引用异常: {ex.Message}");
-                return DateTime.MinValue;
-            }
-        }
+        public  DateTime ParseShanghaiTime(string dateString) => 
+            TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 
+                TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"));
         public async Task<IEnumerable<TradingSignal>> GenerateSignalsAsync(Slice data)
         {
             var signals = new List<TradingSignal>();
@@ -146,7 +136,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
             //     Console.WriteLine($"数据批量保存失败，发生异常: {ex.Message}");
             // }
             // 嘿嘿，这个地方可以批量保存
-            
+
             return signals;
         }
     }
