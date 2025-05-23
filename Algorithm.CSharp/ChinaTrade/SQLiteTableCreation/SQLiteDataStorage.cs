@@ -71,7 +71,28 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
                 return await database.InsertAsync(item);
             }
         }
+        // 批量保存项到数据库中
+        public async Task<int> SaveItemsAsync(IEnumerable<T> items)
+        {
+            var prop = typeof(T).GetProperty("Id");
+            if (prop == null)
+                throw new InvalidOperationException("Type T must have an 'Id' property.");
 
+            int affectedRows = 0;
+            foreach (var item in items)
+            {
+                int id = (int)prop.GetValue(item);
+                if (id != 0)
+                {
+                    affectedRows += await database.UpdateAsync(item);
+                }
+                else
+                {
+                    affectedRows += await database.InsertAsync(item);
+                }
+            }
+            return affectedRows;
+        }
         // 从数据库中删除一个项
         public async Task<int> DeleteItemAsync(T item)
         {
