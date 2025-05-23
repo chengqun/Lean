@@ -98,7 +98,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                     }
                     Debug($"预热完成 - benchmarkmacd.IsReady: {benchmarkmacd.IsReady}, benchmarkcloseIdentity.IsReady: {benchmarkcloseIdentity.IsReady}");
                 }
-                foreach (var item in partItems)
+                foreach (var item in singlePartItems)
                 {
                     var code = item.Code.ToString();
                     // 日线收盘价指标
