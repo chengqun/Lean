@@ -170,10 +170,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
             Debug($"预热完成 - daymacd.IsReady: {daymacd.IsReady}, daycloseIdentity.IsReady: {daycloseIdentity.IsReady}");
         }
 
-        public override void OnData(Slice data)
+        public override async void OnData(Slice data)
         {
             // 生成交易信号
-            var signals = _signalGenerator.GenerateSignals(data);
+            var signals =await _signalGenerator.GenerateSignalsAsync(data);
             // 检查风险
             var risks = _riskManager.CheckRisks(Portfolio);
             // 执行订单

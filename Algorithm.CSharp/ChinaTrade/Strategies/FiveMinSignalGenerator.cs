@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
+using QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation;
 using QuantConnect.Data;
 using QuantConnect.Indicators;
 using QuantConnect.Orders;
@@ -17,12 +19,12 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
         {
             _macdAnalysis = macdAnalysis;
         }
-        public  DateTime ParseShanghaiTime(string dateString)
+        public DateTime ParseShanghaiTime(string dateString)
         {
             try
             {
                 return TimeZoneInfo.ConvertTimeFromUtc(
-                    DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 
+                    DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
                     TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"));
             }
             catch (NullReferenceException ex)
@@ -31,10 +33,11 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                 return DateTime.MinValue;
             }
         }
-        public IEnumerable<TradingSignal> GenerateSignals(Slice data)
+        public async Task<IEnumerable<TradingSignal>> GenerateSignalsAsync(Slice data)
         {
             var signals = new List<TradingSignal>();
             if (data == null) return signals;
+            var storage = new SQLiteDataStorage<RealDataItem>();
 
             foreach (var symbol in _macdAnalysis.Keys)
             {
@@ -49,7 +52,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                     var macdAnalysis = _macdAnalysis[symbol];
                     if (macdAnalysis != null && macdAnalysis.Macd.IsReady && macdAnalysis.CloseIdentity.IsReady)
                     {
-                        // System.Console.WriteLine($"{macdAnalysis.Name},{macdAnalysis.Industry} 时间: {time}, 收盘价: {closePrice}, MACD: {macdAnalysis.Macd.Current.Value}, 收盘价: {macdAnalysis.CloseIdentity.Current.Value}, " +
+                        // System.Console.WriteLine($"时间: {time} {macdAnalysis.Name},{macdAnalysis.Industry} , 收盘价: {closePrice}, MACD: {macdAnalysis.Macd.Current.Value}, 收盘价: {macdAnalysis.CloseIdentity.Current.Value}, " +
                         //     $"{(macdAnalysis.IsGoldenCross ? "金叉" : "false")},  {(macdAnalysis.IsDeathCross ? "死叉" : "false")}, " +
                         //     $"{(macdAnalysis.IsBullishDivergence ? "底背离" : "false")}, {(macdAnalysis.IsBearishDivergence ? "顶背离" : "false")}, " +
                         //     $"K线收益率: {macdAnalysis.KLineReturn}, 20日收益率分位数: {macdAnalysis.TwentyDayReturnQuantile}"+
@@ -57,7 +60,39 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                         //     $"指数收益率: {macdAnalysis.BenchmarkKLineReturn}"+
                         //     $"今日开盘涨幅:{macdAnalysis.DayNextOpenReturn}"
                         //     );
-                            
+                        // 保存 RealDataItem 到数据库 ，自增ID不进行赋值
+                        var item = new RealDataItem
+                        {
+                            Date = time.ToString("yyyy-MM-dd HH:mm:ss"), // 将 DateTime 转换为字符串并使用正确的 forma
+                            // 存储股票名称
+                            Name = macdAnalysis.Name,
+                            // 存储股票所属行业
+                            Industry = macdAnalysis.Industry,
+                            // 存储20日收益率分位数
+                            TwentyDayReturnQuantile = macdAnalysis.TwentyDayReturnQuantile,
+                            // 存储日K线收益率
+                            DayKLineReturn = macdAnalysis.DayKLineReturn,
+                            // 存储指数收益率
+                            BenchmarkKLineReturn = macdAnalysis.BenchmarkKLineReturn,
+                            // 存储今日开盘涨幅
+                            DayNextOpenReturn = macdAnalysis.DayNextOpenReturn
+                        };
+                        try
+                        {
+                            int result = await storage.SaveItemAsync(item); 
+                            if (result > 0) 
+                            { 
+                                Console.WriteLine("数据保存成功"); 
+                            } 
+                            else 
+                            { 
+                                Console.WriteLine("数据保存失败，可能是数据库写入错误或数据格式不匹配。"); 
+                            } 
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"数据保存失败，发生异常: {ex.Message}");
+                        }
                         // 这里模拟调用模型
                         var score = 0.78m;
                         var OperationReson = "";

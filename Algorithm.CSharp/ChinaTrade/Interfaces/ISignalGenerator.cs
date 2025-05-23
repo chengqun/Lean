@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using QuantConnect.Data;
 using QuantConnect.Orders;
 
@@ -10,7 +11,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces
         /// <summary>
         /// 生成交易信号
         /// </summary>
-        IEnumerable<TradingSignal> GenerateSignals(Slice data);
+        // 移除 async 修饰符，因为接口方法不能有方法体
+        public Task<IEnumerable<TradingSignal>> GenerateSignalsAsync(Slice data);
     }
     public class TradingSignal
     {
