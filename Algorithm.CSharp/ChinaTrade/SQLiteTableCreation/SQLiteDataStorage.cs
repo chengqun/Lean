@@ -17,8 +17,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
             SQLiteOpenFlags.Create |
             SQLiteOpenFlags.SharedCache;
 
-        public static string DatabasePath =>
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DatabaseFilename);
+        public static string DatabasePath => Path.Combine(Globals.DataFolder, "AAshares", DatabaseFilename);
     }
 
     // 定义一个泛型类，用于处理 SQLite 数据库的存储操作
