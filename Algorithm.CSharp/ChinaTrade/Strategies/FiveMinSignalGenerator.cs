@@ -42,14 +42,15 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                     var macdAnalysis = _macdAnalysis[symbol];
                     if (macdAnalysis != null && macdAnalysis.Macd.IsReady && macdAnalysis.CloseIdentity.IsReady)
                     {
-                        // System.Console.WriteLine($"时间: {time} {macdAnalysis.Name},{macdAnalysis.Industry} , 收盘价: {closePrice}, MACD: {macdAnalysis.Macd.Current.Value}, 收盘价: {macdAnalysis.CloseIdentity.Current.Value}, " +
-                        //     $"{(macdAnalysis.IsGoldenCross ? "金叉" : "false")},  {(macdAnalysis.IsDeathCross ? "死叉" : "false")}, " +
-                        //     $"{(macdAnalysis.IsBullishDivergence ? "底背离" : "false")}, {(macdAnalysis.IsBearishDivergence ? "顶背离" : "false")}, " +
-                        //     $"K线收益率: {macdAnalysis.KLineReturn}, 20日收益率分位数: {macdAnalysis.TwentyDayReturnQuantile}"+
-                        //     $"日K线收益率: {macdAnalysis.DayKLineReturn}" +
-                        //     $"指数收益率: {macdAnalysis.BenchmarkKLineReturn}"+
-                        //     $"今日开盘涨幅:{macdAnalysis.DayNextOpenReturn}"
-                        //     );
+                        System.Console.WriteLine($"时间: {time} {macdAnalysis.Name},{macdAnalysis.Industry} , 收盘价: {closePrice}, MACD: {macdAnalysis.Macd.Current.Value}, 收盘价: {macdAnalysis.CloseIdentity.Current.Value}, " +
+                            $"{(macdAnalysis.IsGoldenCross ? "金叉" : "false")},  {(macdAnalysis.IsDeathCross ? "死叉" : "false")}, " +
+                            $"{(macdAnalysis.IsBullishDivergence ? "底背离" : "false")}, {(macdAnalysis.IsBearishDivergence ? "顶背离" : "false")}, " +
+                            $"K线收益率: {macdAnalysis.KLineReturn}, 20日收益率分位数: {macdAnalysis.TwentyDayReturnQuantile}" +
+                            $"日K线收益率: {macdAnalysis.DayKLineReturn}" +
+                            $"指数收益率: {macdAnalysis.BenchmarkKLineReturn}" +
+                            $"今日开盘涨幅:{macdAnalysis.DayNextOpenReturn}" + 
+                            $"ROC: {macdAnalysis.Roc.Current.Value}" 
+                            );
                         // 保存 RealDataItem 到数据库 ，自增ID不进行赋值
                         var item = new RealDataItem
                         {

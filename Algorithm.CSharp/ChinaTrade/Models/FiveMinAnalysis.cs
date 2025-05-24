@@ -64,6 +64,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
 
         //日线数据
         public MovingAverageConvergenceDivergence DayMacd { get; }
+        public RateOfChange Roc { get; }
         public IndicatorBase<IndicatorDataPoint> DayCloseIdentity { get; }
         public IndicatorBase<IndicatorDataPoint> DayNextOpenIdentity { get; }
 
@@ -77,7 +78,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         public FiveMinAnalysis(MovingAverageConvergenceDivergence macd, IndicatorBase<IndicatorDataPoint> closeIdentity,string name ,string industry,
         MovingAverageConvergenceDivergence daymacd, IndicatorBase<IndicatorDataPoint> daycloseIdentity,
         IndicatorBase<IndicatorDataPoint> daynextopenIdentity,
-        MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<IndicatorDataPoint> benchmarkcloseIdentity
+        MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<IndicatorDataPoint> benchmarkcloseIdentity,
+        RateOfChange roc
         )
         {
             //分钟数据
@@ -86,8 +88,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             Macd = macd;
             CloseIdentity = closeIdentity;
             // 订阅指标更新事件，当指标有新数据时自动更新状态
-            Macd.Updated += OnMacdUpdated;
-            CloseIdentity.Updated += OnCloseIdentityUpdated;
+            Macd.Updated += (sender, updated) => UpdateStatus();
+            CloseIdentity.Updated += (sender, updated) => UpdateStatus();
             // 初始化时尝试更新状态
             UpdateStatus();
 
@@ -96,28 +98,21 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             DayMacd = daymacd;
             DayCloseIdentity = daycloseIdentity;
             DayNextOpenIdentity = daynextopenIdentity;
+            Roc = roc;
             // 订阅日线指标更新事件，当指标有新数据时自动更新状态
-            DayMacd.Updated += OnDayMacdUpdated;
-            DayCloseIdentity.Updated += OnDayCloseIdentityUpdated;
-            DayNextOpenIdentity.Updated += OnDayCloseIdentityUpdated;
-            // 初始化时尝试更新状态
+            roc.Updated += (sender, updated) => UpdateDayStatus();
+            DayMacd.Updated += (sender, updated) => UpdateDayStatus();
+            DayCloseIdentity.Updated += (sender, updated) => UpdateDayStatus();
+            DayNextOpenIdentity.Updated += (sender, updated) => UpdateDayStatus();
             UpdateDayStatus();
 
             //指数数据
             BenchmarkMacd = benchmarkmacd;
             BenchmarkCloseIdentity = benchmarkcloseIdentity;
             // 订阅指数指标更新事件，当指标有新数据时自动更新状态
-            BenchmarkMacd.Updated += OnBenchmarkMacdUpdated;
-            BenchmarkCloseIdentity.Updated += OnBenchmarkCloseIdentityUpdated;
+            BenchmarkMacd.Updated += (sender, updated) => UpdateBenchmarkStatus();
+            BenchmarkCloseIdentity.Updated += (sender, updated) => UpdateBenchmarkStatus();
             // 初始化时尝试更新状态
-            UpdateBenchmarkStatus();
-        }
-        private void OnBenchmarkMacdUpdated(object sender, IndicatorDataPoint updated)
-        {
-            UpdateBenchmarkStatus();
-        }
-        private void OnBenchmarkCloseIdentityUpdated(object sender, IndicatorDataPoint updated)
-        {
             UpdateBenchmarkStatus();
         }
         private void UpdateBenchmarkStatus()
@@ -154,26 +149,6 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             {
                 Console.WriteLine($"MacdAnalysis.UpdateStatus方法中发生空引用异常: {ex.Message}");
             }
-        }
-
-        private void OnDayCloseIdentityUpdated(object sender, IndicatorDataPoint updated)
-        {
-            UpdateDayStatus();
-        }
-
-        private void OnDayMacdUpdated(object sender, IndicatorDataPoint updated)
-        {
-            UpdateDayStatus();
-        }
-
-        private void OnMacdUpdated(object sender, IndicatorDataPoint updated)
-        {
-            UpdateStatus();
-        }
-
-        private void OnCloseIdentityUpdated(object sender, IndicatorDataPoint updated)
-        {
-            UpdateStatus();
         }
         private void UpdateStatus()
         {

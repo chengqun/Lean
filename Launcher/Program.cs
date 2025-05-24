@@ -142,19 +142,6 @@ namespace QuantConnect.Lean.Launcher
 
             Log.Trace("Program.Main(): Exiting Lean...");
             Environment.Exit(exitCode);
-            // 检查你的 Main 方法结尾是否有类似 Console.ReadKey() 或 Console.ReadLine() 的调用，
-            // 这些会导致程序等待用户输入后才退出。
-            // 在 Lean 官方 Launcher\Program.cs 代码中，默认是没有这类调用的。
-            // 如果你在 Main 方法或 finally 块中添加了 Console.ReadKey() 或 Console.ReadLine()，请将其删除。
-            // 例如：
-
-            // 删除如下代码（如果存在）：
-            // Console.WriteLine("Press any key to exit...");
-            // Console.ReadKey();
-            //20250524 02:41:40.038 TRACE:: Config.GetValue(): close-automatically - Using default value: False
-            //Engine.Main(): Press any key to continue.
-
-            // Lean 的退出逻辑应只依赖于 Environment.Exit(exitCode);
         }
     }
 }
