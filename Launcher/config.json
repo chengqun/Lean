@@ -20,7 +20,7 @@
 
   //Research notebook
   //"composer-dll-directory": ".",
-
+  "close-automatically": true,
   // engine
   "data-folder": "../../../Data/",
 
