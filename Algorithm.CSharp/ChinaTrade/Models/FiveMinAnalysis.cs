@@ -67,9 +67,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         public RateOfChange Roc { get; }
         public IndicatorBase<IndicatorDataPoint> DayCloseIdentity { get; }
         public IndicatorBase<IndicatorDataPoint> DayNextOpenIdentity { get; }
-
+        public IndicatorBase<IndicatorDataPoint> DayNext2OpenIdentity { get; }
         public decimal DayKLineReturn { get; private set; }
         public decimal DayNextOpenReturn { get; private set; }
+        public decimal DayNext2OpenReturn { get; private set; } // 明日开盘收益率
         //指数数据
         public MovingAverageConvergenceDivergence BenchmarkMacd { get; }
         public IndicatorBase<IndicatorDataPoint> BenchmarkCloseIdentity { get; }
@@ -79,7 +80,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         MovingAverageConvergenceDivergence daymacd, IndicatorBase<IndicatorDataPoint> daycloseIdentity,
         IndicatorBase<IndicatorDataPoint> daynextopenIdentity,
         MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<IndicatorDataPoint> benchmarkcloseIdentity,
-        RateOfChange roc
+        RateOfChange roc,
+        IndicatorBase<IndicatorDataPoint> daynext2openIdentity
         )
         {
             //分钟数据
@@ -99,7 +101,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             DayCloseIdentity = daycloseIdentity;
             DayNextOpenIdentity = daynextopenIdentity;
             Roc = roc;
+            DayNext2OpenIdentity = daynext2openIdentity;
             // 订阅日线指标更新事件，当指标有新数据时自动更新状态
+            DayNext2OpenIdentity.Updated += (sender, updated) => UpdateDayStatus();
             roc.Updated += (sender, updated) => UpdateDayStatus();
             DayMacd.Updated += (sender, updated) => UpdateDayStatus();
             DayCloseIdentity.Updated += (sender, updated) => UpdateDayStatus();
@@ -139,11 +143,13 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
                 var macdValue = DayMacd.Current?.Value ?? 0;
                 var closePrice = DayCloseIdentity.Current?.Value ?? 0;
                 var nextOpenPrice = DayNextOpenIdentity.Current?.Value?? 0;
+                var next2OpenPrice = DayNext2OpenIdentity.Current?.Value ?? 0;
                 var previousClosePrice = DayCloseIdentity.Samples > 1 ? DayCloseIdentity[1]?.Value ?? 0 : 0;
                 var previousMacdValue = DayMacd.Samples > 1 ? DayMacd[1]?.Value ?? 0 : 0;
                 // 计算K线收益率  
                 DayKLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
                 DayNextOpenReturn = closePrice!=0?(nextOpenPrice - closePrice)/closePrice :0; // 今日开盘
+                DayNext2OpenReturn = previousClosePrice != 0 ? (next2OpenPrice - previousClosePrice) / previousClosePrice : 0; // 明日开盘
             }
             catch (NullReferenceException ex)
             {
