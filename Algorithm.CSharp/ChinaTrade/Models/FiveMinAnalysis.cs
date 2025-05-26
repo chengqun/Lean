@@ -13,153 +13,133 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
     {
         public string Name { get; private set; }
         public string Industry { get; private set; }
-        public MovingAverageConvergenceDivergence Macd { get; }
-        public IndicatorBase<IndicatorDataPoint> CloseIdentity { get; }
 
-        // 新增字段：K线收益率
-        public decimal KLineReturn { get; private set; }
-        // 新增字段：20日收益率分位数
-        public decimal TwentyDayReturnQuantile { get; private set; }
+        // 分钟K线相关
+        public MovingAverageConvergenceDivergence MinuteMacd { get; }
+        public IndicatorBase<IndicatorDataPoint> MinuteClose { get; }
+        public decimal MinuteKLineReturn { get; private set; }
+        public decimal MinuteTwentyBarReturnQuantile { get; private set; }
+        public decimal MinuteNextDayReturn { get; private set; }
+        public bool MinuteIsLowerGoldenCross { get; private set; }
+        public bool MinuteIsLowerDeathCross { get; private set; }
+        public bool MinuteIsGoldenCross { get; private set; }
+        public bool MinuteIsDeathCross { get; private set; }
+        public bool MinuteIsUpperGoldenCross { get; private set; }
+        public bool MinuteIsUpperDeathCross { get; private set; }
+        public bool MinuteIsBullishDivergence { get; private set; }
+        public bool MinuteIsBearishDivergence { get; private set; }
 
-        public decimal NextDayReturn { get; private set; } // 买入后，次日收盘收益
-
-        // 0轴下方置信度金叉
-        public bool IsLowerGoldenCross { get; private set; }
-        // 0轴下方置信度死叉
-        public bool IsLowerDeathCross { get; private set; }
-
-        // 正常金叉（0轴）
-        public bool IsGoldenCross { get; private set; }
-        // 正常死叉（0轴）
-        public bool IsDeathCross { get; private set; }
-
-        // 0轴上方置信度金叉
-        public bool IsUpperGoldenCross { get; private set; }
-        // 0轴上方置信度死叉
-        public bool IsUpperDeathCross { get; private set; }
-
-        public bool IsBullishDivergence { get; private set; }
-        public bool IsBearishDivergence { get; private set; }
-
-
-
-        //日线数据
+        // 日K线相关
         public MovingAverageConvergenceDivergence DayMacd { get; }
-        public RateOfChange Roc { get; }
-        public IndicatorBase<IndicatorDataPoint> DayCloseIdentity { get; }
-        public IndicatorBase<IndicatorDataPoint> DayNextOpenIdentity { get; }
-        public IndicatorBase<IndicatorDataPoint> DayNext2OpenIdentity { get; }
+        public RateOfChange DayRoc { get; }
+        public IndicatorBase<IndicatorDataPoint> DayClose { get; }
+        public IndicatorBase<IndicatorDataPoint> DayNextOpen { get; }
+        public IndicatorBase<IndicatorDataPoint> DayNext2Open { get; }
         public decimal DayKLineReturn { get; private set; }
         public decimal DayNextOpenReturn { get; private set; }
-        public decimal DayNext2Close { get; private set; } // 明日开盘收益率
-        //指数数据
+        public decimal DayNext2Close { get; private set; }
+
+        // 指数相关
         public MovingAverageConvergenceDivergence BenchmarkMacd { get; }
-        public IndicatorBase<IndicatorDataPoint> BenchmarkCloseIdentity { get; }
+        public IndicatorBase<IndicatorDataPoint> BenchmarkClose { get; }
         public decimal BenchmarkKLineReturn { get; private set; }
-        // 传入分钟线数据和日线数据
-        public FiveMinAnalysis(MovingAverageConvergenceDivergence macd, IndicatorBase<IndicatorDataPoint> closeIdentity,string name ,string industry,
-        MovingAverageConvergenceDivergence daymacd, IndicatorBase<IndicatorDataPoint> daycloseIdentity,
-        IndicatorBase<IndicatorDataPoint> daynextopenIdentity,
-        MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<IndicatorDataPoint> benchmarkcloseIdentity,
-        RateOfChange roc,
-        IndicatorBase<IndicatorDataPoint> daynext2openIdentity
+
+        public FiveMinAnalysis(
+            MovingAverageConvergenceDivergence minuteMacd,
+            IndicatorBase<IndicatorDataPoint> minuteClose,
+            string name,
+            string industry,
+            MovingAverageConvergenceDivergence dayMacd,
+            IndicatorBase<IndicatorDataPoint> dayClose,
+            IndicatorBase<IndicatorDataPoint> dayNextOpen,
+            MovingAverageConvergenceDivergence benchmarkMacd,
+            IndicatorBase<IndicatorDataPoint> benchmarkClose,
+            RateOfChange dayRoc,
+            IndicatorBase<IndicatorDataPoint> dayNext2Open
         )
         {
-            //分钟数据
+            // 分钟K线
             Name = name;
             Industry = industry;
-            Macd = macd;
-            CloseIdentity = closeIdentity;
-            // 订阅指标更新事件，当指标有新数据时自动更新状态
-            Macd.Updated += (sender, updated) => UpdateStatus();
-            CloseIdentity.Updated += (sender, updated) => UpdateStatus();
-            // 初始化时尝试更新状态
-            UpdateStatus();
+            MinuteMacd = minuteMacd;
+            MinuteClose = minuteClose;
+            MinuteMacd.Updated += (sender, updated) => UpdateMinuteStatus();
+            MinuteClose.Updated += (sender, updated) => UpdateMinuteStatus();
+            UpdateMinuteStatus();
 
-
-            // 传入日线数据
-            DayMacd = daymacd;
-            DayCloseIdentity = daycloseIdentity;
-            DayNextOpenIdentity = daynextopenIdentity;
-            Roc = roc;
-            DayNext2OpenIdentity = daynext2openIdentity;
-            // 订阅日线指标更新事件，当指标有新数据时自动更新状态
-            DayNext2OpenIdentity.Updated += (sender, updated) => UpdateDayStatus();
-            roc.Updated += (sender, updated) => UpdateDayStatus();
+            // 日K线
+            DayMacd = dayMacd;
+            DayClose = dayClose;
+            DayNextOpen = dayNextOpen;
+            DayRoc = dayRoc;
+            DayNext2Open = dayNext2Open;
+            DayNext2Open.Updated += (sender, updated) => UpdateDayStatus();
+            DayRoc.Updated += (sender, updated) => UpdateDayStatus();
             DayMacd.Updated += (sender, updated) => UpdateDayStatus();
-            DayCloseIdentity.Updated += (sender, updated) => UpdateDayStatus();
-            DayNextOpenIdentity.Updated += (sender, updated) => UpdateDayStatus();
+            DayClose.Updated += (sender, updated) => UpdateDayStatus();
+            DayNextOpen.Updated += (sender, updated) => UpdateDayStatus();
             UpdateDayStatus();
 
-            //指数数据
-            BenchmarkMacd = benchmarkmacd;
-            BenchmarkCloseIdentity = benchmarkcloseIdentity;
-            // 订阅指数指标更新事件，当指标有新数据时自动更新状态
+            // 指数
+            BenchmarkMacd = benchmarkMacd;
+            BenchmarkClose = benchmarkClose;
             BenchmarkMacd.Updated += (sender, updated) => UpdateBenchmarkStatus();
-            BenchmarkCloseIdentity.Updated += (sender, updated) => UpdateBenchmarkStatus();
-            // 初始化时尝试更新状态
+            BenchmarkClose.Updated += (sender, updated) => UpdateBenchmarkStatus();
             UpdateBenchmarkStatus();
         }
+
         private void UpdateBenchmarkStatus()
         {
             try
             {
                 var macdValue = BenchmarkMacd.Current?.Value ?? 0;
-                var closePrice = BenchmarkCloseIdentity.Current?.Value ?? 0;
-                var previousClosePrice = BenchmarkCloseIdentity.Samples > 1 ? BenchmarkCloseIdentity[1]?.Value ?? 0 : 0;
-                var previousMacdValue = BenchmarkMacd.Samples > 1 ? BenchmarkMacd[1]?.Value ?? 0 : 0;
-
-                // 计算K线收益率  
+                var closePrice = BenchmarkClose.Current?.Value ?? 0;
+                var previousClosePrice = BenchmarkClose.Samples > 1 ? BenchmarkClose[1]?.Value ?? 0 : 0;
                 BenchmarkKLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
             }
             catch (NullReferenceException ex)
             {
-                Console.WriteLine($"MacdAnalysis.UpdateStatus方法中发生空引用异常: {ex.Message}");
+                Console.WriteLine($"FiveMinAnalysis.UpdateBenchmarkStatus 空引用异常: {ex.Message}");
             }
         }
+
         private void UpdateDayStatus()
         {
             try
             {
                 var macdValue = DayMacd.Current?.Value ?? 0;
-                var closePrice = DayCloseIdentity.Current?.Value ?? 0;
-                var nextOpenPrice = DayNextOpenIdentity.Current?.Value?? 0;
-
-                var next2OpenPrice = DayNext2OpenIdentity.Current?.Value ?? 0;
-
-                var previousClosePrice = DayCloseIdentity.Samples > 1 ? DayCloseIdentity[1]?.Value ?? 0 : 0;
-                var previousMacdValue = DayMacd.Samples > 1 ? DayMacd[1]?.Value ?? 0 : 0;
-                // 计算K线收益率  
+                var closePrice = DayClose.Current?.Value ?? 0;
+                var nextOpenPrice = DayNextOpen.Current?.Value ?? 0;
+                var next2OpenPrice = DayNext2Open.Current?.Value ?? 0;
+                var previousClosePrice = DayClose.Samples > 1 ? DayClose[1]?.Value ?? 0 : 0;
                 DayKLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
-                DayNextOpenReturn = closePrice!=0?(nextOpenPrice - closePrice)/closePrice :0; // 今日开盘
-                DayNext2Close = next2OpenPrice; // 次日收盘价
+                DayNextOpenReturn = closePrice != 0 ? (nextOpenPrice - closePrice) / closePrice : 0;
+                DayNext2Close = next2OpenPrice;
             }
             catch (NullReferenceException ex)
             {
-                Console.WriteLine($"MacdAnalysis.UpdateStatus方法中发生空引用异常: {ex.Message}");
+                Console.WriteLine($"FiveMinAnalysis.UpdateDayStatus 空引用异常: {ex.Message}");
             }
         }
-        private void UpdateStatus()
+
+        private void UpdateMinuteStatus()
         {
             try
             {
-                var macdValue = Macd.Current?.Value ?? 0;
-                var closePrice = CloseIdentity.Current?.Value ?? 0;
-                var previousClosePrice = CloseIdentity.Samples > 1 ? CloseIdentity[1]?.Value ?? 0 : 0;
-                var previousMacdValue = Macd.Samples > 1 ? Macd[1]?.Value ?? 0 : 0;
+                var macdValue = MinuteMacd.Current?.Value ?? 0;
+                var closePrice = MinuteClose.Current?.Value ?? 0;
+                var previousClosePrice = MinuteClose.Samples > 1 ? MinuteClose[1]?.Value ?? 0 : 0;
+                MinuteKLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
+                MinuteNextDayReturn = closePrice != 0 ? (DayNext2Close / closePrice - 1) : 0;
 
-                // 计算K线收益率  
-                KLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
-                // 买入后，次日收盘收益
-                NextDayReturn =  closePrice != 0 ? ( DayNext2Close/ closePrice - 1) : 0;
-                // 计算20日收益率分位数  
-                if (CloseIdentity.Samples >= 20)
+                // 20bar收益率分位数
+                if (MinuteClose.Samples >= 20)
                 {
                     var returns = new List<decimal>();
                     for (int i = 0; i < 19; i++)
                     {
-                        var current = CloseIdentity[i]?.Value ?? 0;
-                        var prev = CloseIdentity[i + 1]?.Value ?? 0;
+                        var current = MinuteClose[i]?.Value ?? 0;
+                        var prev = MinuteClose[i + 1]?.Value ?? 0;
                         if (prev != 0)
                         {
                             returns.Add((current - prev) / prev);
@@ -168,109 +148,76 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
                     if (returns.Count > 0)
                     {
                         var sortedReturns = returns.OrderBy(x => x).ToList();
-                        var denominator = CloseIdentity[1]?.Value ?? 0;
-                        var currentReturn = denominator != 0 ? CloseIdentity[0]?.Value / denominator - 1 : 0;
+                        var denominator = MinuteClose[1]?.Value ?? 0;
+                        var currentReturn = denominator != 0 ? MinuteClose[0]?.Value / denominator - 1 : 0;
                         int count = sortedReturns.Count(x => x < currentReturn);
                         int equal = sortedReturns.Count(x => x == currentReturn);
-                        TwentyDayReturnQuantile = (count + 0.5m * equal) / sortedReturns.Count;
+                        MinuteTwentyBarReturnQuantile = (count + 0.5m * equal) / sortedReturns.Count;
                     }
                     else
                     {
-                        TwentyDayReturnQuantile = 0;
+                        MinuteTwentyBarReturnQuantile = 0;
                     }
                 }
                 else
                 {
-                    TwentyDayReturnQuantile = 0;
+                    MinuteTwentyBarReturnQuantile = 0;
                 }
-                // 设置置信度
+
+                // 置信度与形态
                 const decimal tolerance = 0.0025m;
-                decimal fast = Macd.Fast;
-                decimal delta = (Macd.Current.Value - Macd.Signal.Current.Value) / (fast != 0 ? fast : 1);
+                decimal fast = MinuteMacd.Fast;
+                decimal delta = (MinuteMacd.Current.Value - MinuteMacd.Signal.Current.Value) / (fast != 0 ? fast : 1);
                 bool isSignificant = Math.Abs(fast) > 0.0001m;
-                decimal prevDelta = Macd[1] != null && Macd.Signal[1] != null ? (Macd[1].Value - Macd.Signal[1].Value) / (fast != 0 ? fast : 1) : 0;
+                decimal prevDelta = MinuteMacd[1] != null && MinuteMacd.Signal[1] != null ? (MinuteMacd[1].Value - MinuteMacd.Signal[1].Value) / (fast != 0 ? fast : 1) : 0;
 
-                // 检测金叉：MACD从下向上穿越信号线 ，0轴上方
-                IsUpperGoldenCross = Macd.Samples > 1 &&
-                                isSignificant &&
-                                delta > tolerance &&
-                                prevDelta <= tolerance
-                                ;
+                MinuteIsUpperGoldenCross = MinuteMacd.Samples > 1 && isSignificant && delta > tolerance && prevDelta <= tolerance;
+                MinuteIsUpperDeathCross = MinuteMacd.Samples > 1 && isSignificant && delta < tolerance && prevDelta >= tolerance;
+                MinuteIsLowerGoldenCross = MinuteMacd.Samples > 1 && isSignificant && delta > -tolerance && prevDelta <= -tolerance;
+                MinuteIsLowerDeathCross = MinuteMacd.Samples > 1 && isSignificant && delta < -tolerance && prevDelta >= -tolerance;
+                MinuteIsGoldenCross = MinuteMacd.Samples > 1 &&
+                                      MinuteMacd.Current.Value > MinuteMacd.Signal.Current.Value &&
+                                      MinuteMacd[1] != null && MinuteMacd.Signal[1] != null &&
+                                      MinuteMacd[1].Value <= MinuteMacd.Signal[1].Value;
+                MinuteIsDeathCross = MinuteMacd.Samples > 1 &&
+                                     MinuteMacd.Current.Value < MinuteMacd.Signal.Current.Value &&
+                                     MinuteMacd[1] != null && MinuteMacd.Signal[1] != null &&
+                                     MinuteMacd[1].Value >= MinuteMacd.Signal[1].Value;
 
-                // 检测死叉：MACD从上向下穿越信号线 ，0轴上方
-                IsUpperDeathCross = Macd.Samples > 1 &&
-                                isSignificant &&
-                                delta < tolerance &&
-                                prevDelta >= tolerance
-                                ;
-
-                // 检测金叉：MACD从下向上穿越信号线 ，0轴下方
-                IsLowerGoldenCross = Macd.Samples > 1 &&
-                                isSignificant &&
-                                delta > -tolerance &&
-                                prevDelta <= -tolerance
-                                ;
-                // 检测死叉：MACD从上向下穿越信号线 ，0轴下方
-                IsLowerDeathCross = Macd.Samples > 1 &&
-                                isSignificant &&
-                                delta < -tolerance &&
-                                prevDelta >= -tolerance
-                                ;
-
-                // 检测金叉：MACD从下向上穿越信号线
-                IsGoldenCross = Macd.Samples > 1 &&
-                                Macd.Current.Value > Macd.Signal.Current.Value &&
-                                Macd[1] != null && Macd.Signal[1] != null &&
-                                Macd[1].Value <= Macd.Signal[1].Value;
-
-                // 检测死叉：MACD从上向下穿越信号线
-                IsDeathCross = Macd.Samples > 1 &&
-                               Macd.Current.Value < Macd.Signal.Current.Value &&
-                               Macd[1] != null && Macd.Signal[1] != null &&
-                               Macd[1].Value >= Macd.Signal[1].Value;
-                
-
-                // 检测顶背离：价格创新高但MACD未创新高
-                IsBearishDivergence = false;
-                if (CloseIdentity.Samples > 2 && Macd.Samples > 2)
+                // 顶背离
+                MinuteIsBearishDivergence = false;
+                if (MinuteClose.Samples > 2 && MinuteMacd.Samples > 2)
                 {
-                    // 增加空值判断，防止 NullReferenceException
                     var prevHigh = 0m;
-                    if (CloseIdentity.Samples > 2 && CloseIdentity[1] != null && CloseIdentity[2] != null)
-                    {
-                        prevHigh = Math.Max(CloseIdentity[1].Value, CloseIdentity[2].Value);
-                    }
+                    if (MinuteClose[1] != null && MinuteClose[2] != null)
+                        prevHigh = Math.Max(MinuteClose[1].Value, MinuteClose[2].Value);
                     var prevMacdHigh = 0m;
-                    if (Macd.Samples > 2 && Macd[1] != null && Macd[2] != null)
-                    {
-                        prevMacdHigh = Math.Max(Macd[1].Value, Macd[2].Value);
-                    }
+                    if (MinuteMacd[1] != null && MinuteMacd[2] != null)
+                        prevMacdHigh = Math.Max(MinuteMacd[1].Value, MinuteMacd[2].Value);
                     if (closePrice > prevHigh && macdValue < prevMacdHigh)
-                    {
-                        IsBearishDivergence = true;
-                    }
+                        MinuteIsBearishDivergence = true;
                 }
-                // 检测底背离：价格创新低但MACD未创新低
-                IsBullishDivergence = false;
-                if (CloseIdentity.Samples > 2 && Macd.Samples > 2)
+                // 底背离
+                MinuteIsBullishDivergence = false;
+                if (MinuteClose.Samples > 2 && MinuteMacd.Samples > 2)
                 {
                     decimal? prevLow = null, prevMacdLow = null;
-                    if (CloseIdentity[1] != null && CloseIdentity[2] != null)
-                        prevLow = Math.Min(CloseIdentity[1].Value, CloseIdentity[2].Value);
-                    if (Macd[1] != null && Macd[2] != null)
-                        prevMacdLow = Math.Min(Macd[1].Value, Macd[2].Value);
-                    if (CloseIdentity[1] != null && CloseIdentity[2] != null &&
-                        Macd[1] != null && Macd[2] != null &&
+                    if (MinuteClose[1] != null && MinuteClose[2] != null)
+                        prevLow = Math.Min(MinuteClose[1].Value, MinuteClose[2].Value);
+                    if (MinuteMacd[1] != null && MinuteMacd[2] != null)
+                        prevMacdLow = Math.Min(MinuteMacd[1].Value, MinuteMacd[2].Value);
+                    if (MinuteClose[1] != null && MinuteClose[2] != null &&
+                        MinuteMacd[1] != null && MinuteMacd[2] != null &&
                         prevLow.HasValue && prevMacdLow.HasValue &&
                         closePrice < prevLow && macdValue > prevMacdLow)
                     {
-                        IsBullishDivergence = true;
+                        MinuteIsBullishDivergence = true;
                     }
                 }
             }
             catch (NullReferenceException ex)
             {
-                Console.WriteLine($"MacdAnalysis.UpdateStatus方法中发生空引用异常: {ex.Message}");
+                Console.WriteLine($"FiveMinAnalysis.UpdateMinuteStatus 空引用异常: {ex.Message}");
             }
         }
     }

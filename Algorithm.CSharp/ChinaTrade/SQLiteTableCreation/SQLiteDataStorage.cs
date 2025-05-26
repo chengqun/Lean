@@ -112,13 +112,11 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public string Date { get; set; }
         public string Name { get; set; }
         public string Industry { get; set; }
-        // 将 decimal 类型改为 float 类型以匹配数据库中的 float 类型
-        public decimal TwentyDayReturnQuantile { get; set; }
-        public decimal DayKLineReturn { get; set; }
-        public decimal BenchmarkKLineReturn { get; set; }
+        // X 特征
         public decimal DayNextOpenReturn { get; set; } // 今日开盘涨幅，这是X值，表示今日开盘涨幅
-
-        public decimal NextDayReturn { get; set; } // 这是Y值，表示第二天的收益率
+        // 9点35
+        // Y 特征
+        public decimal Lable { get; set; } // 这是Y值，表示第二天的收益率
     }
 
     public static class GlobalRealDataItemList
