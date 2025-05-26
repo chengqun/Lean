@@ -67,7 +67,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 存储指数收益率
                             BenchmarkKLineReturn = macdAnalysis.BenchmarkKLineReturn,
                             // 存储今日开盘涨幅
-                            DayNextOpenReturn = macdAnalysis.DayNextOpenReturn
+                            DayNextOpenReturn = macdAnalysis.DayNextOpenReturn,
+                            // 存储第二天的收益率
+                            NextDayReturn = macdAnalysis.NextDayReturn
                         };
                         // 将数据项添加到队列中
                         GlobalRealDataItemList.Items.Add(item);

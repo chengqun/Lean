@@ -116,7 +116,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public decimal TwentyDayReturnQuantile { get; set; }
         public decimal DayKLineReturn { get; set; }
         public decimal BenchmarkKLineReturn { get; set; }
-        public decimal DayNextOpenReturn { get; set; }
+        public decimal DayNextOpenReturn { get; set; } // 今日开盘涨幅，这是X值，表示今日开盘涨幅
+
+        public decimal NextDayReturn { get; set; } // 这是Y值，表示第二天的收益率
     }
 
     public static class GlobalRealDataItemList
