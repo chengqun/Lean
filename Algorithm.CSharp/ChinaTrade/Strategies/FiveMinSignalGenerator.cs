@@ -63,10 +63,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
 
                             // X特征
                             // 开盘价
-                            DayNextOpenReturn = analysis.DayNextOpenReturn, // 今日开盘涨幅
+                            DayNextOpenReturn = Math.Round(analysis.DayNextOpenReturn, 4), // 今日开盘涨幅
 
                             // Y特征
-                            Lable = analysis.MinuteNextDayReturn // 第二天的收益率
+                            Lable = Math.Round(analysis.MinuteNextDayReturn, 4) // 第二天的收益率
                         };
                         // 将数据项添加到队列中
                         GlobalRealDataItemList.Items.Add(item);
