@@ -113,23 +113,21 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                     var daymacd = MACD(daysymbol, 12, 26, 9, MovingAverageType.Exponential, Resolution.Daily);
                     var daycloseIdentity = Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
                     var daynextopenIdentity = Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).NextOpen));
-                    var daynext2openIdentity = Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Next2Close));
+                    var daynext2closeIdentity = Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Next2Close));
 
                     RateOfChange roc = ROC(daysymbol, 1, Resolution.Daily);
-                    AverageTrueRange atr = ATR(daysymbol, 14, MovingAverageType.Wilders, Resolution.Daily);
-                    OnBalanceVolume obv = OBV(daysymbol, Resolution.Daily);
                     // 5min指标
                     var symbol = AddData<Api5MinCustomData>(code, Resolution.Minute, TimeZones.Utc).Symbol;
                     var macd = MACD(symbol, 12, 26, 9, MovingAverageType.Exponential, Resolution.Minute);
                     var closeIdentity = Identity(symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Close));
 
-                    var macdAnalysis = new FiveMinAnalysis(macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity,roc, daynext2openIdentity);
+                    var macdAnalysis = new FiveMinAnalysis(macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity,roc, daynext2closeIdentity);
 
                     _macdAnalysis.Add(symbol, macdAnalysis);
                     if (LiveMode)
                     {
                         // 预热MACD和收盘价指标
-                        WarmUpIndicators(symbol, macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daysymbol, daymacd, daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity, roc, daynext2openIdentity);
+                        WarmUpIndicators(symbol, macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daysymbol, daymacd, daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity, roc, daynext2closeIdentity);
                     }
                 }
             }
@@ -140,7 +138,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
         IndicatorBase<Indicators.IndicatorDataPoint> daynextopenIdentity,
         MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<Indicators.IndicatorDataPoint> benchmarkcloseIdentity,
         RateOfChange roc,
-        IndicatorBase<Indicators.IndicatorDataPoint>  daynext2openIdentity
+        IndicatorBase<Indicators.IndicatorDataPoint>  daynext2closeIdentity
         )
         {
             // 计算MACD所需最小数据量(26周期+9信号线)
@@ -178,11 +176,11 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                 {
                     daycloseIdentity.Update(bar.EndTime, customData.Close);
                     daynextopenIdentity.Update(bar.EndTime, customData.NextOpen);
-                    daynext2openIdentity.Update(bar.EndTime, customData.Next2Close);
+                    daynext2closeIdentity.Update(bar.EndTime, customData.Next2Close);
                 }
             }
             // 只在循环外创建一次实例
-            _macdAnalysis[symbol] = new FiveMinAnalysis(macd, closeIdentity,name,industry,daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity,roc, daynext2openIdentity);
+            _macdAnalysis[symbol] = new FiveMinAnalysis(macd, closeIdentity,name,industry,daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity,roc, daynext2closeIdentity);
             Debug($"预热完成 - daymacd.IsReady: {daymacd.IsReady}, daycloseIdentity.IsReady: {daycloseIdentity.IsReady}");
         }
 

@@ -50,7 +50,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             $"指数收益率: {macdAnalysis.BenchmarkKLineReturn}" +
                             $"今日开盘涨幅:{macdAnalysis.DayNextOpenReturn}" + 
                             $"ROC: {macdAnalysis.Roc.Current.Value}" +
-                            $"收益率{macdAnalysis.DayNext2OpenReturn}"
+                            $"收益率{macdAnalysis.NextDayReturn}"
                             );
                         // 保存 RealDataItem 到数据库 ，自增ID不进行赋值
                         var item = new RealDataItem

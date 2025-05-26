@@ -12,31 +12,16 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
     public class FiveMinAnalysis
     {
         public string Name { get; private set; }
-        public string Industry { get; private set; } 
-        // 记录买入时间
-        public DateTime EntryTimeBuy { get; private set; }
-        // 记录买入价格
-        public decimal EntryPriceBuy { get; private set; }
-        // 记录卖出时间
-        public DateTime EntryTimeSell { get; private set; }
-        // 记录卖出价格
-        public decimal EntryPriceSell { get; private set; }
-
-        // 新增方法用于记录买入信息
-        public void RecordBuyEntry(DateTime time, decimal price)
-        {
-            EntryTimeBuy = time;
-            EntryPriceBuy = price;
-        }
-        // 新增方法用于记录卖出信息
-        public void RecordSellEntry(DateTime time, decimal price)
-        {
-            EntryTimeSell = time;
-            EntryPriceSell = price;
-        }
+        public string Industry { get; private set; }
         public MovingAverageConvergenceDivergence Macd { get; }
         public IndicatorBase<IndicatorDataPoint> CloseIdentity { get; }
 
+        // 新增字段：K线收益率
+        public decimal KLineReturn { get; private set; }
+        // 新增字段：20日收益率分位数
+        public decimal TwentyDayReturnQuantile { get; private set; }
+
+        public decimal NextDayReturn { get; private set; } // 买入后，次日收盘收益
 
         // 0轴下方置信度金叉
         public bool IsLowerGoldenCross { get; private set; }
@@ -56,10 +41,6 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         public bool IsBullishDivergence { get; private set; }
         public bool IsBearishDivergence { get; private set; }
 
-        // 新增字段：K线收益率
-        public decimal KLineReturn { get; private set; }
-        // 新增字段：20日收益率分位数
-        public decimal TwentyDayReturnQuantile { get; private set; }
 
 
         //日线数据
@@ -70,7 +51,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         public IndicatorBase<IndicatorDataPoint> DayNext2OpenIdentity { get; }
         public decimal DayKLineReturn { get; private set; }
         public decimal DayNextOpenReturn { get; private set; }
-        public decimal DayNext2OpenReturn { get; private set; } // 明日开盘收益率
+        public decimal DayNext2Close { get; private set; } // 明日开盘收益率
         //指数数据
         public MovingAverageConvergenceDivergence BenchmarkMacd { get; }
         public IndicatorBase<IndicatorDataPoint> BenchmarkCloseIdentity { get; }
@@ -143,13 +124,15 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
                 var macdValue = DayMacd.Current?.Value ?? 0;
                 var closePrice = DayCloseIdentity.Current?.Value ?? 0;
                 var nextOpenPrice = DayNextOpenIdentity.Current?.Value?? 0;
+
                 var next2OpenPrice = DayNext2OpenIdentity.Current?.Value ?? 0;
+
                 var previousClosePrice = DayCloseIdentity.Samples > 1 ? DayCloseIdentity[1]?.Value ?? 0 : 0;
                 var previousMacdValue = DayMacd.Samples > 1 ? DayMacd[1]?.Value ?? 0 : 0;
                 // 计算K线收益率  
                 DayKLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
                 DayNextOpenReturn = closePrice!=0?(nextOpenPrice - closePrice)/closePrice :0; // 今日开盘
-                DayNext2OpenReturn = previousClosePrice != 0 ? (next2OpenPrice - previousClosePrice) / previousClosePrice : 0; // 明日开盘
+                DayNext2Close = next2OpenPrice; // 次日收盘价
             }
             catch (NullReferenceException ex)
             {
@@ -167,7 +150,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
 
                 // 计算K线收益率  
                 KLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
-
+                // 买入后，次日收盘收益
+                NextDayReturn =  closePrice != 0 ? ( DayNext2Close/ closePrice - 1) : 0;
                 // 计算20日收益率分位数  
                 if (CloseIdentity.Samples >= 20)
                 {
