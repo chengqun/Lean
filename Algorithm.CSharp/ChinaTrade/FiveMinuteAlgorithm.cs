@@ -118,22 +118,30 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                     RateOfChange roc = ROC(daysymbol, 1, Resolution.Daily);
                     // 5min指标
                     var symbol = AddData<Api5MinCustomData>(code, Resolution.Minute, TimeZones.Utc).Symbol;
-                    var macd = MACD(symbol, 12, 26, 9, MovingAverageType.Exponential, Resolution.Minute);
+                    MovingAverageConvergenceDivergence macd = MACD(symbol, 12, 26, 9, MovingAverageType.Exponential, Resolution.Minute);
+                    ExponentialMovingAverage ema = EMA(symbol, 3, Resolution.Minute);
+                    RelativeStrengthIndex rsi = RSI(symbol, 6, MovingAverageType.Wilders, Resolution.Minute);
+                    
                     var closeIdentity = Identity(symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Close));
-
-                    var macdAnalysis = new FiveMinAnalysis(macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity,roc, daynext2closeIdentity);
+                    var volumeIdentity = Identity(symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Volume));
+                    var macdAnalysis = new FiveMinAnalysis(macd,ema,rsi, closeIdentity,volumeIdentity, item.Name.ToString(), item.Industry.ToString(),daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity,roc, daynext2closeIdentity);
 
                     _macdAnalysis.Add(symbol, macdAnalysis);
                     if (LiveMode)
                     {
                         // 预热MACD和收盘价指标
-                        WarmUpIndicators(symbol, macd, closeIdentity, item.Name.ToString(), item.Industry.ToString(),daysymbol, daymacd, daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity, roc, daynext2closeIdentity);
+                        WarmUpIndicators(symbol, macd,ema,rsi, closeIdentity,volumeIdentity, item.Name.ToString(), item.Industry.ToString(),daysymbol, daymacd, daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity, roc, daynext2closeIdentity);
                     }
                 }
             }
         }
 
-        private void WarmUpIndicators(Symbol symbol,MovingAverageConvergenceDivergence macd, IndicatorBase<Indicators.IndicatorDataPoint> closeIdentity,string name,string industry,
+        private void WarmUpIndicators(Symbol symbol,MovingAverageConvergenceDivergence macd,
+        ExponentialMovingAverage ema,
+        RelativeStrengthIndex rsi,
+        IndicatorBase<Indicators.IndicatorDataPoint> closeIdentity,
+        IndicatorBase<Indicators.IndicatorDataPoint> volumeIdentity,
+        string name,string industry,
         Symbol daysymbol,MovingAverageConvergenceDivergence daymacd, IndicatorBase<Indicators.IndicatorDataPoint> daycloseIdentity,
         IndicatorBase<Indicators.IndicatorDataPoint> daynextopenIdentity,
         MovingAverageConvergenceDivergence benchmarkmacd, IndicatorBase<Indicators.IndicatorDataPoint> benchmarkcloseIdentity,
@@ -153,9 +161,12 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
             foreach (var bar in history.OrderBy(x => x.Time))
             {
                 macd.Update(bar.Time, bar.Close);
+                ema.Update(bar.Time, bar.Close);
+                rsi.Update(bar.Time, bar.Close);
                 if (bar is Api5MinCustomData customData)
                 {
                     closeIdentity.Update(bar.EndTime, customData.Close);
+                    volumeIdentity.Update(bar.EndTime, customData.Volume);
                 }
             }
             Debug($"预热完成 - MACD.IsReady: {macd.IsReady}, CloseIdentity.IsReady: {closeIdentity.IsReady}");
@@ -180,7 +191,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade
                 }
             }
             // 只在循环外创建一次实例
-            _macdAnalysis[symbol] = new FiveMinAnalysis(macd, closeIdentity,name,industry,daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity,roc, daynext2closeIdentity);
+            _macdAnalysis[symbol] = new FiveMinAnalysis(macd,ema,rsi, closeIdentity,volumeIdentity,name,industry,daymacd,daycloseIdentity,daynextopenIdentity,benchmarkmacd,benchmarkcloseIdentity,roc, daynext2closeIdentity);
             Debug($"预热完成 - daymacd.IsReady: {daymacd.IsReady}, daycloseIdentity.IsReady: {daycloseIdentity.IsReady}");
         }
 

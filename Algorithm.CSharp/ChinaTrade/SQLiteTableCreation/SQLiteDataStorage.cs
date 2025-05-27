@@ -112,9 +112,18 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public string Date { get; set; }
         public string Name { get; set; }
         public string Industry { get; set; }
-        // X 特征
+        // 日线X 特征
         public decimal DayNextOpenReturn { get; set; } // 今日开盘涨幅，这是X值，表示今日开盘涨幅
-        // 9点35
+
+        // 分钟X 特征
+        public decimal MinuteKLineReturn { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
+        public decimal MinuteVolumeRatio { get; set; } // 分钟量比，这是X值，表示分钟的量比
+        public decimal MinuteVolumeRatio3 { get; set; } // 与前3周期平均量比，这是X值，表示与前3周期的平均量比
+        public decimal MinuteEmaSlope { get; set; } // 分钟Ema斜率，这是X值，表示分钟Ema的斜率
+        public decimal MinuteMacdDivergence { get; set; } // 分钟MACD背离，这是X值，表示分钟MACD的背离情况
+        public decimal MinuteRsi { get; set; } // 分钟RSI，这是X值，表示分钟RSI的值
+
+        public decimal MinutePriceBreakout { get; set; } // 分钟突破前30分钟高点，这是X值，表示分钟价格是否突破前30分钟的高点
         // Y 特征
         public decimal Lable { get; set; } // 这是Y值，表示第二天的收益率
     }

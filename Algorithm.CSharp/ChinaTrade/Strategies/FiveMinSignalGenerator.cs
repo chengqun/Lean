@@ -47,10 +47,19 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                                                 $"|行业{analysis.Industry}" +
                                                 $"|日K线收益率: {analysis.DayKLineReturn:F4}" +
                                                 $"|指数收益率: {analysis.BenchmarkKLineReturn:F4}" +
-                                                // X特征
+                                                // Day的X特征
                                                 $"|今日开盘涨幅:{analysis.DayNextOpenReturn:F4}" +
                                                 // Y
-                                                $"|未来收益率 {analysis.MinuteNextDayReturn:F4}"
+                                                $"|未来收益率 {analysis.MinuteNextDayReturn:F4}" +
+                                                // 分钟的X特征
+                                                $"|分钟K线收益率: {analysis.MinuteKLineReturn:F4}" +
+                                                $"|分钟量比: {analysis.MinuteVolumeRatio:F4}" +
+                                                $"|分钟量比3: {analysis.MinuteVolumeRatio3:F4}"+
+                                                $"|分钟Ema斜率: {analysis.MinuteEmaSlope:F4}" +
+                                                $"|分钟macd背离: {analysis.MinuteMacdDivergence}"+
+                                                $"|分钟RSI: {analysis.MinuteRsi:F4}" +
+                                                $"|分钟突破前30分钟高点: {analysis.MinutePriceBreakout}"
+
                             );
                         // 保存 RealDataItem 到数据库 ，自增ID不进行赋值
                         var item = new RealDataItem
@@ -60,11 +69,17 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             Name = analysis.Name,
                             // 存储股票所属行业
                             Industry = analysis.Industry,
-
                             // X特征
-                            // 开盘价
+                            // 日线数据的特征 
                             DayNextOpenReturn = Math.Round(analysis.DayNextOpenReturn, 4), // 今日开盘涨幅
-
+                            // 分钟数据的特征
+                            MinuteKLineReturn = Math.Round(analysis.MinuteKLineReturn, 4), // 分钟K线收益率
+                            MinuteVolumeRatio = Math.Round(analysis.MinuteVolumeRatio, 4), // 分钟量比
+                            MinuteVolumeRatio3 = Math.Round(analysis.MinuteVolumeRatio3, 4), // 与前3周期平均量比
+                            MinuteEmaSlope = Math.Round(analysis.MinuteEmaSlope, 4), // 分钟Ema斜率
+                            MinuteMacdDivergence = analysis.MinuteMacdDivergence, // 分钟MACD背离
+                            MinuteRsi = Math.Round(analysis.MinuteRsi.Current.Value, 2), // 分钟RSI
+                            MinutePriceBreakout = analysis.MinutePriceBreakout, // 分钟突破前30分钟高点
                             // Y特征
                             Lable = Math.Round(analysis.MinuteNextDayReturn, 4) // 第二天的收益率
                         };

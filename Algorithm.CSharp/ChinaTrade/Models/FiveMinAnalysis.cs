@@ -16,19 +16,27 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
 
         // 分钟K线相关
         public MovingAverageConvergenceDivergence MinuteMacd { get; }
+        public ExponentialMovingAverage MinuteEma { get; }
+        public RelativeStrengthIndex MinuteRsi { get; }
         public IndicatorBase<IndicatorDataPoint> MinuteClose { get; }
-        public decimal MinuteKLineReturn { get; private set; }
-        public decimal MinuteTwentyBarReturnQuantile { get; private set; }
+        public IndicatorBase<IndicatorDataPoint> MinuteVolume { get; }
+        // 定义Y
         public decimal MinuteNextDayReturn { get; private set; }
-        public bool MinuteIsLowerGoldenCross { get; private set; }
-        public bool MinuteIsLowerDeathCross { get; private set; }
-        public bool MinuteIsGoldenCross { get; private set; }
-        public bool MinuteIsDeathCross { get; private set; }
-        public bool MinuteIsUpperGoldenCross { get; private set; }
-        public bool MinuteIsUpperDeathCross { get; private set; }
-        public bool MinuteIsBullishDivergence { get; private set; }
-        public bool MinuteIsBearishDivergence { get; private set; }
 
+        // 定义X
+        // 特征1:分钟K线收益率
+        public decimal MinuteKLineReturn { get; private set; }
+        // 特征2:分钟量比 
+        public decimal MinuteVolumeRatio { get; private set; }
+        // 特征3: 与前3周期平均量比
+        public decimal MinuteVolumeRatio3 { get; private set; }
+        // 特征4: 成交量EMA斜率
+        public decimal MinuteEmaSlope  {get; private set; }
+        // 特征5: 分钟MACD背离
+        public decimal MinuteMacdDivergence { get; private set; }
+
+        // 特征6: 价格突破前30分钟高点
+        public decimal MinutePriceBreakout { get; private set; }
         // 日K线相关
         public MovingAverageConvergenceDivergence DayMacd { get; }
         public RateOfChange DayRoc { get; }
@@ -46,7 +54,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
 
         public FiveMinAnalysis(
             MovingAverageConvergenceDivergence minuteMacd,
+            ExponentialMovingAverage minuteEma,
+            RelativeStrengthIndex minuteRsi,
             IndicatorBase<IndicatorDataPoint> minuteClose,
+            IndicatorBase<IndicatorDataPoint> minuteVolume,//
             string name,
             string industry,
             MovingAverageConvergenceDivergence dayMacd,
@@ -62,9 +73,16 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             Name = name;
             Industry = industry;
             MinuteMacd = minuteMacd;
+            MinuteEma = minuteEma;
+            MinuteRsi = minuteRsi;
             MinuteClose = minuteClose;
+            MinuteVolume = minuteVolume;
+
             MinuteMacd.Updated += (sender, updated) => UpdateMinuteStatus();
+            MinuteEma.Updated += (sender, updated) => UpdateMinuteStatus();
+            MinuteRsi.Updated += (sender, updated) => UpdateMinuteStatus();
             MinuteClose.Updated += (sender, updated) => UpdateMinuteStatus();
+            MinuteVolume.Updated += (sender, updated) => UpdateMinuteStatus();
             UpdateMinuteStatus();
 
             // 日K线
@@ -126,93 +144,68 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         {
             try
             {
-                var macdValue = MinuteMacd.Current?.Value ?? 0;
                 var closePrice = MinuteClose.Current?.Value ?? 0;
-                var previousClosePrice = MinuteClose.Samples > 1 ? MinuteClose[1]?.Value ?? 0 : 0;
-                MinuteKLineReturn = previousClosePrice != 0 ? (closePrice - previousClosePrice) / previousClosePrice : 0;
+                var previousClosePrice1 = MinuteClose.Samples > 1 ? MinuteClose[1]?.Value ?? 0 : 0;
+                var previousClosePrice2 = MinuteClose.Samples > 2 ? MinuteClose[2]?.Value ?? 0 : 0;
+                var previousClosePrice3 = MinuteClose.Samples > 3 ? MinuteClose[3]?.Value ?? 0 : 0;
+                var previousClosePrice4 = MinuteClose.Samples > 4 ? MinuteClose[4]?.Value ?? 0 : 0;
+                var previousClosePrice5 = MinuteClose.Samples > 5 ? MinuteClose[5]?.Value ?? 0 : 0;
+                var previousClosePrice6 = MinuteClose.Samples > 6 ? MinuteClose[6]?.Value ?? 0 : 0;
+                // 最大值
+                var maxPreviousClosePrice = Math.Max(Math.Max(previousClosePrice1, previousClosePrice2), 
+                    Math.Max(Math.Max(previousClosePrice3, previousClosePrice4), 
+                    Math.Max(previousClosePrice5, previousClosePrice6)));
+                // 量比
+                var volume = MinuteVolume.Current?.Value ?? 0;
+                var previousVolume1 = MinuteVolume.Samples > 1 ? MinuteVolume[1]?.Value ?? 0 : 0;
+                var previousVolume2 = MinuteVolume.Samples > 2 ? MinuteVolume[2]?.Value ?? 0 : 0;
+                var previousVolume3 = MinuteVolume.Samples > 3 ? MinuteVolume[3]?.Value ?? 0 : 0;
+                // 前三根K线的平均量比
+                var averageVolume = (previousVolume1 + previousVolume2 + previousVolume3) / 3;
+
+                // 成交量EMA斜率
+                var emaValue = MinuteEma.Current?.Value ?? 0;
+                var previousEmaValue = MinuteEma.Samples > 1 ? MinuteEma[1]?.Value ?? 0 : 0;
+
+                // MACD
+                var macdValue = MinuteMacd.Current?.Value ?? 0;
+                var previousMacdValue = MinuteMacd.Samples > 1 ? MinuteMacd[1]?.Value ?? 0 : 0;
+
+                // rsi斜率
+                // var rsiValue = MinuteRsi.Current?.Value ?? 0;
+                // var previousRsiValue = MinuteRsi.Samples > 1 ? MinuteRsi[1]?.Value ?? 0 : 0;
+
+                // 定义Y
                 MinuteNextDayReturn = closePrice != 0 ? (DayNext2Close / closePrice - 1) : 0;
 
-                // 20bar收益率分位数
-                if (MinuteClose.Samples >= 20)
+                // 加工X
+                // 分钟K线收益率，信号的这根是涨是跌，涨幅都很关键的。
+                MinuteKLineReturn = previousClosePrice1 != 0 ? (closePrice - previousClosePrice1) / previousClosePrice1 : 0;
+                // 量比
+                MinuteVolumeRatio = previousVolume1 != 0 ? (volume / previousVolume1) : 0;
+                MinuteVolumeRatio3 = averageVolume != 0 ? (volume / averageVolume) : 0;
+                // 成交量EMA斜率
+                MinuteEmaSlope = previousEmaValue != 0 ? (emaValue - previousEmaValue) / previousEmaValue : 0;
+
+                // macd背离，价格新高但macd未同步新高
+                MinuteMacdDivergence = 0;
+                if (closePrice > previousClosePrice1 && macdValue < previousMacdValue)
                 {
-                    var returns = new List<decimal>();
-                    for (int i = 0; i < 19; i++)
-                    {
-                        var current = MinuteClose[i]?.Value ?? 0;
-                        var prev = MinuteClose[i + 1]?.Value ?? 0;
-                        if (prev != 0)
-                        {
-                            returns.Add((current - prev) / prev);
-                        }
-                    }
-                    if (returns.Count > 0)
-                    {
-                        var sortedReturns = returns.OrderBy(x => x).ToList();
-                        var denominator = MinuteClose[1]?.Value ?? 0;
-                        var currentReturn = denominator != 0 ? MinuteClose[0]?.Value / denominator - 1 : 0;
-                        int count = sortedReturns.Count(x => x < currentReturn);
-                        int equal = sortedReturns.Count(x => x == currentReturn);
-                        MinuteTwentyBarReturnQuantile = (count + 0.5m * equal) / sortedReturns.Count;
-                    }
-                    else
-                    {
-                        MinuteTwentyBarReturnQuantile = 0;
-                    }
+                    MinuteMacdDivergence = 1; // 表示价格新高但MACD未同步新高
+                }
+                else if (closePrice < previousClosePrice1 && macdValue > previousMacdValue)
+                {
+                    MinuteMacdDivergence = -1; // 表示价格新低但MACD未同步新低
                 }
                 else
                 {
-                    MinuteTwentyBarReturnQuantile = 0;
+                    MinuteMacdDivergence = 0; // 没有背离
                 }
-
-                // 置信度与形态
-                const decimal tolerance = 0.0025m;
-                decimal fast = MinuteMacd.Fast;
-                decimal delta = (MinuteMacd.Current.Value - MinuteMacd.Signal.Current.Value) / (fast != 0 ? fast : 1);
-                bool isSignificant = Math.Abs(fast) > 0.0001m;
-                decimal prevDelta = MinuteMacd[1] != null && MinuteMacd.Signal[1] != null ? (MinuteMacd[1].Value - MinuteMacd.Signal[1].Value) / (fast != 0 ? fast : 1) : 0;
-
-                MinuteIsUpperGoldenCross = MinuteMacd.Samples > 1 && isSignificant && delta > tolerance && prevDelta <= tolerance;
-                MinuteIsUpperDeathCross = MinuteMacd.Samples > 1 && isSignificant && delta < tolerance && prevDelta >= tolerance;
-                MinuteIsLowerGoldenCross = MinuteMacd.Samples > 1 && isSignificant && delta > -tolerance && prevDelta <= -tolerance;
-                MinuteIsLowerDeathCross = MinuteMacd.Samples > 1 && isSignificant && delta < -tolerance && prevDelta >= -tolerance;
-                MinuteIsGoldenCross = MinuteMacd.Samples > 1 &&
-                                      MinuteMacd.Current.Value > MinuteMacd.Signal.Current.Value &&
-                                      MinuteMacd[1] != null && MinuteMacd.Signal[1] != null &&
-                                      MinuteMacd[1].Value <= MinuteMacd.Signal[1].Value;
-                MinuteIsDeathCross = MinuteMacd.Samples > 1 &&
-                                     MinuteMacd.Current.Value < MinuteMacd.Signal.Current.Value &&
-                                     MinuteMacd[1] != null && MinuteMacd.Signal[1] != null &&
-                                     MinuteMacd[1].Value >= MinuteMacd.Signal[1].Value;
-
-                // 顶背离
-                MinuteIsBearishDivergence = false;
-                if (MinuteClose.Samples > 2 && MinuteMacd.Samples > 2)
+                // 价格突破前30分钟高点，前一根没突破，当前根突破了
+                MinutePriceBreakout = 0;
+                if (closePrice > maxPreviousClosePrice && previousClosePrice1 <= maxPreviousClosePrice)
                 {
-                    var prevHigh = 0m;
-                    if (MinuteClose[1] != null && MinuteClose[2] != null)
-                        prevHigh = Math.Max(MinuteClose[1].Value, MinuteClose[2].Value);
-                    var prevMacdHigh = 0m;
-                    if (MinuteMacd[1] != null && MinuteMacd[2] != null)
-                        prevMacdHigh = Math.Max(MinuteMacd[1].Value, MinuteMacd[2].Value);
-                    if (closePrice > prevHigh && macdValue < prevMacdHigh)
-                        MinuteIsBearishDivergence = true;
-                }
-                // 底背离
-                MinuteIsBullishDivergence = false;
-                if (MinuteClose.Samples > 2 && MinuteMacd.Samples > 2)
-                {
-                    decimal? prevLow = null, prevMacdLow = null;
-                    if (MinuteClose[1] != null && MinuteClose[2] != null)
-                        prevLow = Math.Min(MinuteClose[1].Value, MinuteClose[2].Value);
-                    if (MinuteMacd[1] != null && MinuteMacd[2] != null)
-                        prevMacdLow = Math.Min(MinuteMacd[1].Value, MinuteMacd[2].Value);
-                    if (MinuteClose[1] != null && MinuteClose[2] != null &&
-                        MinuteMacd[1] != null && MinuteMacd[2] != null &&
-                        prevLow.HasValue && prevMacdLow.HasValue &&
-                        closePrice < prevLow && macdValue > prevMacdLow)
-                    {
-                        MinuteIsBullishDivergence = true;
-                    }
+                    MinutePriceBreakout = 1; // 表示价格突破前30分钟高点
                 }
             }
             catch (NullReferenceException ex)
