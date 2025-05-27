@@ -20,6 +20,17 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
         public RelativeStrengthIndex MinuteRsi { get; }
         public IndicatorBase<IndicatorDataPoint> MinuteClose { get; }
         public IndicatorBase<IndicatorDataPoint> MinuteVolume { get; }
+
+        // 设置买入时间
+        public DateTime BuyTime { get; private set; }
+
+        //定义函数设置BuyTime和SellTime
+        public void SetBuyTime(DateTime time)
+        {
+            BuyTime = time;
+        }
+
+
         // 定义Y
         public decimal MinuteNextDayReturn { get; private set; }
 

@@ -113,7 +113,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public string Name { get; set; }
         public string Industry { get; set; }
         // 日线X 特征
-        public decimal DayNextOpenReturn { get; set; } // 今日开盘涨幅，这是X值，表示今日开盘涨幅
+        public decimal OpenReturn { get; set; } // 今日开盘涨幅，这是X值，表示今日开盘涨幅
 
         // 分钟X 特征
         public decimal MinuteKLineReturn { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率

@@ -20,5 +20,5 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces
         public decimal TriggerPrice { get; set; }
     }
 
-    public enum RiskAction { StopLoss, TakeProfit }
+    public enum RiskAction { StopLoss, TakeProfit , TimeStopLoss }
 }

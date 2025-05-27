@@ -7,6 +7,7 @@ using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation;
 using QuantConnect.Data;
+using QuantConnect.Data.Fundamental;
 using QuantConnect.Indicators;
 using QuantConnect.Orders;
 
@@ -71,7 +72,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             Industry = analysis.Industry,
                             // X特征
                             // 日线数据的特征 
-                            DayNextOpenReturn = Math.Round(analysis.DayNextOpenReturn, 4), // 今日开盘涨幅
+                            OpenReturn = Math.Round(analysis.DayNextOpenReturn, 4), // 今日开盘涨幅
                             // 分钟数据的特征
                             MinuteKLineReturn = Math.Round(analysis.MinuteKLineReturn, 4), // 分钟K线收益率
                             MinuteVolumeRatio = Math.Round(analysis.MinuteVolumeRatio, 4), // 分钟量比
@@ -87,11 +88,23 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                         GlobalRealDataItemList.Items.Add(item);
                         var score = 0.78m;
                         var OperationReson = "";
+                        
                         // 这里模拟调用模型
-                        if (analysis.DayNextOpenReturn > 0.05m)
+                        if (analysis.DayNextOpenReturn > 0.05m && time.Hour == 9 && time.Minute == 35)
                         {
-                            score = 0.92m;
-                            OperationReson += "高开买入";
+                            score = 0.95m;
+                            OperationReson += "今日开盘涨幅大于5%且分钟K线收益率大于2%";
+                            // 记录买入时间
+                            analysis.SetBuyTime(time);
+                        }
+                        // 次日收盘卖出
+                        if (analysis.BuyTime != default(DateTime) &&
+                            time.Date > analysis.BuyTime.Date &&
+                            time.Hour == 14 && time.Minute == 55)
+                        {
+                            score = 0.15m;
+                            OperationReson += "次日收盘卖出";
+                            analysis.SetBuyTime(default(DateTime)); // 清除买入时间
                         }
 
                         var direction = score > 0.9m ? OrderDirection.Buy :
