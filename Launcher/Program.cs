@@ -13,7 +13,6 @@
  * limitations under the License.
  *
 */
-
 using QuantConnect.Configuration;
 using QuantConnect.Lean.Engine;
 using QuantConnect.Logging;

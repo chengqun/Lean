@@ -55,9 +55,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                                                 // 分钟的X特征
                                                 $"|分钟K线收益率: {analysis.MinuteKLineReturn:F4}" +
                                                 $"|分钟量比: {analysis.MinuteVolumeRatio:F4}" +
-                                                $"|分钟量比3: {analysis.MinuteVolumeRatio3:F4}"+
+                                                $"|分钟量比3: {analysis.MinuteVolumeRatio3:F4}" +
                                                 $"|分钟Ema斜率: {analysis.MinuteEmaSlope:F4}" +
-                                                $"|分钟macd背离: {analysis.MinuteMacdDivergence}"+
+                                                $"|分钟macd背离: {analysis.MinuteMacdDivergence}" +
                                                 $"|分钟RSI: {analysis.MinuteRsi:F4}" +
                                                 $"|分钟突破前30分钟高点: {analysis.MinutePriceBreakout}"
 
@@ -88,14 +88,17 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                         GlobalRealDataItemList.Items.Add(item);
                         var score = 0.78m;
                         var OperationReson = "";
-                        
+
                         // 这里模拟调用模型
-                        if (analysis.DayNextOpenReturn > 0.05m && time.Hour == 9 && time.Minute == 35)
+                        if (analysis.MinutePriceBreakout==1 )
                         {
                             score = 0.95m;
-                            OperationReson += "今日开盘涨幅大于5%且分钟K线收益率大于2%";
+                            OperationReson += "分钟突破前30分钟高点，";
                             // 记录买入时间
-                            analysis.SetBuyTime(time);
+                            if (analysis.BuyTime == default(DateTime))
+                            {
+                                analysis.SetBuyTime(time);
+                            }
                         }
                         // 次日收盘卖出
                         if (analysis.BuyTime != default(DateTime) &&
@@ -125,11 +128,13 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                     {
                         System.Console.WriteLine($"时间: {time}, 收盘价: {closePrice}, MACD指标或收盘价指标数据尚未准备好");
                     }
+                    _macdAnalysis[symbol] = analysis; // 更新分析数据,主要是买入价
                 }
                 catch (NullReferenceException ex)
                 {
                     System.Console.WriteLine($"OnData方法中发生空引用异常: {ex.Message}");
                 }
+                
             }
 
             return signals;
