@@ -87,9 +87,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 日信息
                             DayKLineReturn = Math.Round(analysis.DayKLineReturn, 4), // 日K线收益率
                             // macd
-                            DayMacd = Math.Round(analysis.DayMacd, 2), // 日MACD
-                            DayMacdHistogram = Math.Round(analysis.DayMacd.Histogram*2, 2), // 日MACD柱状图
-                            DayMacdSignal = Math.Round(analysis.DayMacd.Signal, 2), // 日MACD信号线
+                            DayMacd = Math.Round(analysis.DayMacd.Histogram*2, 2), // 日MACD
+                            DayDIFF = Math.Round(analysis.DayMacd, 2) , // 日MACD柱状图
+                            DayDEA = Math.Round(analysis.DayMacd.Signal, 2), // 日MACD信号线
                             // 开盘信息
                             OpenReturn = Math.Round(analysis.OpenReturn, 4), // 今日开盘涨幅
                             // 分钟K线信息
@@ -102,7 +102,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // Ema斜率
                             MinuteEmaSlope = Math.Round(analysis.MinuteEmaSlope, 4), // 分钟Ema斜率
                             // MACD背离
-                            MinuteMacdDivergence = analysis.MinuteMacdDivergence, // 分钟MACD背离
+                            MinMACD = Math.Round(analysis.MinuteMacd.Histogram*2, 2) , // 
+                            MinDIFF = Math.Round(analysis.MinuteMacd, 2), // 分钟MACD柱状图
+                            MinDEA = Math.Round(analysis.MinuteMacd.Signal, 2), // 分钟MACD信号线
                             // RSI
                             MinuteRsi = Math.Round(analysis.MinuteRsiValue, 2), // 分钟RSI
 

@@ -123,8 +123,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         // 日线X 特征
         public decimal DayKLineReturn { get; set; } // 日K线收益率，这是X值，表示日K线的收益率
         public decimal DayMacd { get; set; } // 
-        public decimal DayMacdHistogram { get; set; } // 日MACD柱状图，这是X值，表示日MACD柱状图的值
-        public decimal DayMacdSignal { get; set; } // 日MACD信号线，这是X值，表示日MACD信号线的值
+        public decimal DayDIFF { get; set; } // 日MACD柱状图，这是X值，表示日MACD柱状图的值
+        public decimal DayDEA { get; set; } // 日MACD信号线，这是X值，表示日MACD信号线的值
         // 开盘信息
         public decimal OpenReturn { get; set; } // 今日开盘涨幅，这是X值，表示今日开盘涨幅
 
@@ -137,8 +137,11 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public decimal MinuteVolumeRatio3 { get; set; } // 与前3周期平均量比，这是X值，表示与前3周期的平均量比
         //EMA
         public decimal MinuteEmaSlope { get; set; } // 分钟Ema斜率，这是X值，表示分钟Ema的斜率
-        //MACD
-        public decimal MinuteMacdDivergence { get; set; } // 分钟MACD背离，这是X值，表示分钟MACD的背离情况
+                                                    //MACD
+        public decimal MinMACD { get; set; } // 分钟MACD，这是X值，表示分钟MACD的值
+        public decimal MinDIFF { get; set; } // 分钟MACD柱状图，这是X值，表示分钟MACD柱状图的值
+        public decimal MinDEA { get; set; } // 分钟MACD信号线，这是X值，表示分钟MACD信号线的值
+
         // RSI
         public decimal MinuteRsi { get; set; } // 分钟RSI，这是X值，表示分钟RSI的值
     }

@@ -170,16 +170,16 @@ public class FiveAnalysis
         MinuteClose = _algo.Identity(Symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Close));
         MinuteVolume = _algo.Identity(Symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Volume));
 
-        MinuteMacd = _algo.MACD(Symbol, 6, 13, 4, MovingAverageType.Wilders);
+        MinuteMacd = _algo.MACD(Symbol, 6, 13, 4, MovingAverageType.Exponential);
         MinuteEma = _algo.EMA(Symbol, 3);
-        MinuteRsi = _algo.RSI(Symbol, 6, MovingAverageType.Wilders);
+        MinuteRsi = _algo.RSI(Symbol, 6, MovingAverageType.Exponential);
 
         // 日线字段
         var daysymbol = _algo.AddData<ApiDayCustomData>(code, Resolution.Daily, TimeZones.Utc).Symbol;
         DayNext2Close = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Next2Close));
         NextOpen = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).NextOpen));
         DayClose = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
-        DayMacd = _algo.MACD(daysymbol, 12, 26, 9, MovingAverageType.Wilders);
+        DayMacd = _algo.MACD(daysymbol, 12, 26, 9, MovingAverageType.Exponential);
         // 指数
         var benchmarkSymbol = _algo.AddData<ApiDayCustomData>("sh.000001", Resolution.Daily, TimeZones.Utc).Symbol;
         BenchmarkClose = _algo.Identity(benchmarkSymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
