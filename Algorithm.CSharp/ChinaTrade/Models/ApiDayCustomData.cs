@@ -92,17 +92,17 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
                 var data = new ApiDayCustomData
                 {
                     Date = csv[0],
-                    Open = Convert.ToDecimal(csv[1]),
-                    Close = Convert.ToDecimal(csv[2]),
-                    High = Convert.ToDecimal(csv[3]),
-                    Low = Convert.ToDecimal(csv[4]),
-                    Volume = Convert.ToDecimal(csv[5]),
-                    Amount = Convert.ToDecimal(csv[6]),
+                    Open = Math.Round(Convert.ToDecimal(csv[1]), 2),
+                    Close = Math.Round(Convert.ToDecimal(csv[2]), 2),
+                    High = Math.Round(Convert.ToDecimal(csv[3]), 2),
+                    Low = Math.Round(Convert.ToDecimal(csv[4]), 2),
+                    Volume = Math.Round(Convert.ToDecimal(csv[5]), 2),
+                    Amount = Math.Round(Convert.ToDecimal(csv[6]), 2),
                     StrategyName = csv[7],
-                    NextOpen = string.IsNullOrEmpty(csv[8]) ? 0 : Convert.ToDecimal(csv[8]),
-                    NextClose = string.IsNullOrEmpty(csv[9]) ? 0 : Convert.ToDecimal(csv[9]),
-                    Next2Open = string.IsNullOrEmpty(csv[10]) ? 0 : Convert.ToDecimal(csv[10]),
-                    Next2Close = string.IsNullOrEmpty(csv[11]) ? 0 : Convert.ToDecimal(csv[11])
+                    NextOpen = string.IsNullOrEmpty(csv[8]) ? 0 : Math.Round(Convert.ToDecimal(csv[8]), 2),
+                    NextClose = string.IsNullOrEmpty(csv[9]) ? 0 : Math.Round(Convert.ToDecimal(csv[9]), 2),
+                    Next2Open = string.IsNullOrEmpty(csv[10]) ? 0 : Math.Round(Convert.ToDecimal(csv[10]), 2),
+                    Next2Close = string.IsNullOrEmpty(csv[11]) ? 0 : Math.Round(Convert.ToDecimal(csv[11]), 2)
                 };
                 var a = DateTime.ParseExact(data.Date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
                 var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(config.ExchangeTimeZone.Id);

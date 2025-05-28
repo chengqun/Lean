@@ -81,12 +81,12 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
                 var data = new Api5MinCustomData
                 {
                     Date = csv[0],
-                    Open = Convert.ToDecimal(csv[1]),
-                    Close = Convert.ToDecimal(csv[2]),
-                    High = Convert.ToDecimal(csv[3]),
-                    Low = Convert.ToDecimal(csv[4]),
-                    Volume = Convert.ToDecimal(csv[5]),
-                    Amount = Convert.ToDecimal(csv[6]),
+                    Open = Math.Round(Convert.ToDecimal(csv[1]), 2),
+                    Close = Math.Round(Convert.ToDecimal(csv[2]), 2),
+                    High = Math.Round(Convert.ToDecimal(csv[3]), 2),
+                    Low = Math.Round(Convert.ToDecimal(csv[4]), 2),
+                    Volume = Math.Round(Convert.ToDecimal(csv[5]), 2),
+                    Amount = Math.Round(Convert.ToDecimal(csv[6]), 2),
                     StrategyName = csv[7]
                 };
                 var a = DateTime.ParseExact(data.Date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);

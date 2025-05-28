@@ -5,11 +5,19 @@ using QuantConnect.Orders;
 
 
 namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
-
+/// <summary>
+/// 传入股票代码，此类返回该时刻的各项指标数据，包含日线和分钟线数据
+/// 以及指数数据。用于分析和生成交易信号。
+/// 该类包含了日线和分钟线的各项指标数据，
+/// 包括价格、成交量、MACD、EMA、RSI等指标。  
+/// </summary>
 public class FiveAnalysis
 {
     private QCAlgorithm _algo;
+    // 指数
+    public IndicatorBase<IndicatorDataPoint> BenchmarkClose { get; private set; }
     // 日线
+    public MovingAverageConvergenceDivergence DayMacd { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayNext2Close { get; private set; }  
     public IndicatorBase<IndicatorDataPoint> NextOpen { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayClose { get; private set; }
@@ -19,8 +27,7 @@ public class FiveAnalysis
     public MovingAverageConvergenceDivergence MinuteMacd { get; private set; }
     public ExponentialMovingAverage MinuteEma { get; private set;}
     public RelativeStrengthIndex MinuteRsi { get;private set; }
-    // 指数
-    public IndicatorBase<IndicatorDataPoint> BenchmarkClose { get; private set; }
+
     public Symbol Symbol { get; set; }
     public string Name { get; set; }
     public string Industry { get; set; }
@@ -43,8 +50,8 @@ public class FiveAnalysis
     public decimal MinuteEmaSlope { get; private set; }
     //分钟MACD背离
     public decimal MinuteMacdDivergence { get; private set; }
-
-
+    // 分钟RSI值
+    public decimal MinuteRsiValue { get; private set; }
     // 定义Y
     public decimal MinuteNextDayReturn { get; private set; }
 
@@ -55,7 +62,19 @@ public class FiveAnalysis
         _algo = algo ?? throw new ArgumentNullException(nameof(algo));
         InitializeIndicators(code);
 
+        // 订阅更新事件
+        BenchmarkClose.Updated += (sender, updated) => UpdateMinuteStatus();
+        // 日线指标更新事件
+        DayNext2Close.Updated += (sender, updated) => UpdateMinuteStatus();
+        NextOpen.Updated += (sender, updated) => UpdateMinuteStatus();
+        DayClose.Updated += (sender, updated) => UpdateMinuteStatus();
+        DayMacd.Updated += (sender, updated) => UpdateMinuteStatus();
+        // 分钟线指标更新事件
         MinuteClose.Updated += (sender, updated) => UpdateMinuteStatus();
+        MinuteVolume.Updated += (sender, updated) => UpdateMinuteStatus();
+        MinuteMacd.Updated += (sender, updated) => UpdateMinuteStatus();
+        MinuteEma.Updated += (sender, updated) => UpdateMinuteStatus();
+        MinuteRsi.Updated += (sender, updated) => UpdateMinuteStatus();
     }
 
     private void UpdateMinuteStatus()
@@ -71,8 +90,8 @@ public class FiveAnalysis
             var previousClosePrice5 = MinuteClose.Samples > 5 ? MinuteClose[5]?.Value ?? 0 : 0;
             var previousClosePrice6 = MinuteClose.Samples > 6 ? MinuteClose[6]?.Value ?? 0 : 0;
             // 30分钟最大值
-            var maxPreviousClosePrice = Math.Max(Math.Max(previousClosePrice1, previousClosePrice2), 
-                Math.Max(Math.Max(previousClosePrice3, previousClosePrice4), 
+            var maxPreviousClosePrice = Math.Max(Math.Max(previousClosePrice1, previousClosePrice2),
+                Math.Max(Math.Max(previousClosePrice3, previousClosePrice4),
                 Math.Max(previousClosePrice5, previousClosePrice6)));
             // 价格突破前30分钟高点，前一根没突破，当前根突破了
             MinutePriceBreakout = 0;
@@ -97,6 +116,12 @@ public class FiveAnalysis
             var emaValue = MinuteEma.Current?.Value ?? 0;
             var previousEmaValue = MinuteEma.Samples > 1 ? MinuteEma[1]?.Value ?? 0 : 0;
             MinuteEmaSlope = previousEmaValue != 0 ? (emaValue - previousEmaValue) / previousEmaValue : 0;
+
+            // RSI
+            var rsiValue = MinuteRsi.Current?.Value ?? 0;
+            var previousRsiValue = MinuteRsi.Samples > 1 ? MinuteRsi[1]?.Value ?? 0 : 0;
+            // RSI背离，价格新高但RSI未同步新高
+            MinuteRsiValue = rsiValue;
             // MACD
             var macdValue = MinuteMacd.Current?.Value ?? 0;
             var previousMacdValue = MinuteMacd.Samples > 1 ? MinuteMacd[1]?.Value ?? 0 : 0;
@@ -131,7 +156,7 @@ public class FiveAnalysis
             OpenReturn = dayClose != 0 ? (nextDayOpen / dayClose - 1) : 0;
             // 定义Y
             MinuteNextDayReturn = closePrice != 0 ? (nextDayClose / closePrice - 1) : 0;
-            
+
         }
         catch (Exception ex)
         {
@@ -145,15 +170,16 @@ public class FiveAnalysis
         MinuteClose = _algo.Identity(Symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Close));
         MinuteVolume = _algo.Identity(Symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Volume));
 
-        MinuteMacd = _algo.MACD(Symbol, 12, 26, 9, MovingAverageType.Wilders, Resolution.Minute);
-        MinuteEma = _algo.EMA(Symbol, 30, Resolution.Minute);
-        MinuteRsi = _algo.RSI(Symbol, 14, MovingAverageType.Wilders, Resolution.Minute);
+        MinuteMacd = _algo.MACD(Symbol, 6, 13, 4, MovingAverageType.Wilders);
+        MinuteEma = _algo.EMA(Symbol, 3);
+        MinuteRsi = _algo.RSI(Symbol, 6, MovingAverageType.Wilders);
+
         // 日线字段
         var daysymbol = _algo.AddData<ApiDayCustomData>(code, Resolution.Daily, TimeZones.Utc).Symbol;
         DayNext2Close = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Next2Close));
         NextOpen = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).NextOpen));
         DayClose = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
-
+        DayMacd = _algo.MACD(daysymbol, 12, 26, 9, MovingAverageType.Wilders);
         // 指数
         var benchmarkSymbol = _algo.AddData<ApiDayCustomData>("sh.000001", Resolution.Daily, TimeZones.Utc).Symbol;
         BenchmarkClose = _algo.Identity(benchmarkSymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
@@ -190,6 +216,7 @@ public class FiveAnalysis
         }
         foreach (var bar in dayhistoryList.OrderBy(x => x.Time))
         {
+            DayMacd.Update(bar.EndTime, bar.Close);
             if (bar is ApiDayCustomData customData)
             {
                 DayNext2Close.Update(bar.EndTime, customData.Next2Close);
@@ -205,13 +232,13 @@ public class FiveAnalysis
         }
         foreach (var bar in historyList.OrderBy(x => x.Time))
         {
+            MinuteMacd.Update(bar.EndTime, bar.Close);
+            MinuteEma.Update(bar.EndTime, bar.Close);
+            MinuteRsi.Update(bar.EndTime, bar.Close);
             if (bar is Api5MinCustomData customData)
             {
                 MinuteClose.Update(bar.EndTime, customData.Close);
                 MinuteVolume.Update(bar.EndTime, customData.Volume);
-                MinuteMacd.Update(bar.EndTime, customData.Close);
-                MinuteEma.Update(bar.EndTime, customData.Close);
-                MinuteRsi.Update(bar.EndTime, customData.Close);
             }
         }
     }

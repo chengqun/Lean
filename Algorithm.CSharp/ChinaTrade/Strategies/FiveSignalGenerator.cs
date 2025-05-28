@@ -43,44 +43,71 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                     var analysis = _macdAnalysis[symbol];
                     if (analysis != null )
                     {
-                        System.Console.WriteLine(
-                                                // Y标签
-                                                $"|未来收益率 {analysis.MinuteNextDayReturn:F4}" +
-                                                // 基本信息
-                                                $"|时间: {time}" +
-                                                $"|名称:{analysis.Name}" +
-                                                $"|行业{analysis.Industry}" +
-                                                // 指数信息
-                                                $"|指数收益率: {analysis.BenchmarkKLineReturn:F4}" +
-                                                // 日信息
-                                                $"|日K线收益率: {analysis.DayKLineReturn:F4}" +
-                                                // 开盘信息
-                                                $"|今日开盘涨幅:{analysis.OpenReturn:F4}" +
-                                                // 分钟K线信息
-                                                $"|分钟K线收益率: {analysis.MinuteKLineReturn:F4}" +
-                                                $"|分钟量比: {analysis.MinuteVolumeRatio:F4}" +
-                                                $"|分钟量比3: {analysis.MinuteVolumeRatio3:F4}" +
-                                                $"|分钟Ema斜率: {analysis.MinuteEmaSlope:F4}" +
-                                                $"|分钟macd背离: {analysis.MinuteMacdDivergence}" +
-                                                $"|分钟RSI: {analysis.MinuteRsi:F4}" +
-                                                $"|分钟突破前30分钟高点: {analysis.MinutePriceBreakout}"
+                        // System.Console.WriteLine(
+                        //                         // Y标签
+                        //                         $"|未来收益率 {analysis.MinuteNextDayReturn:F4}" +
+                        //                         // 基本信息
+                        //                         $"|时间: {time}" +
+                        //                         $"|名称:{analysis.Name}" +
+                        //                         $"|行业{analysis.Industry}" +
+                        //                         $"|price: {closePrice:F4}" +
+                        //                         // 指数信息
+                        //                         $"|指数收益率: {analysis.BenchmarkKLineReturn:F4}" +
+                        //                         // 日信息
+                        //                         $"|日K线收益率: {analysis.DayKLineReturn:F4}" +
+                        //                         // 开盘信息
+                        //                         $"|今日开盘涨幅:{analysis.OpenReturn:F4}" +
+                        //                         // 分钟K线信息
+                        //                         $"|分钟K线收益率: {analysis.MinuteKLineReturn:F4}" +
+                        //                         $"|分钟突破前30分钟高点: {analysis.MinutePriceBreakout}" +
+                        //                         // 量比
+                        //                         $"|分钟量比: {analysis.MinuteVolumeRatio:F4}" +
+                        //                         $"|分钟量比3: {analysis.MinuteVolumeRatio3:F4}" +
+                        //                         // Ema斜率
+                        //                         $"|分钟Ema斜率: {analysis.MinuteEmaSlope:F4}" +
+                        //                         // MACD背离
+                        //                         $"|分钟macd背离: {analysis.MinuteMacdDivergence}" +
+                        //                         // RSI
+                        //                         $"|分钟RSI: {analysis.MinuteRsiValue:F4}" 
 
-                            );
+                        //     );
                         // 保存 RealDataItem 到数据库 ，自增ID不进行赋值
                         var item = new RealDataItem
                         {
-                            Date = time.ToString("yyyy-MM-dd HH:mm:ss"), // 将 DateTime 转换为字符串并使用正确的 forma
-                            // 存储股票名称
-                            Name = analysis.Name,
-                            // 存储股票所属行业
-                            Industry = analysis.Industry,
-                            // X特征
 
-                            // MinuteMacdDivergence = analysis.MinuteMacdDivergence, // 分钟MACD背离
-                            // MinuteRsi = Math.Round(analysis.MinuteRsi.Current.Value, 2), // 分钟RSI
-                            // MinutePriceBreakout = analysis.MinutePriceBreakout, // 分钟突破前30分钟高点
                             // Y特征
-                            Lable = Math.Round(analysis.MinuteNextDayReturn, 4) // 第二天的收益率
+                            Lable = Math.Round(analysis.MinuteNextDayReturn, 4), // 第二天的收益率
+                            // 基本信息
+                            Date = time.ToString("yyyy-MM-dd HH:mm:ss"), // 将 DateTime 转换为字符串并使用正确的 forma
+                            Name = analysis.Name,                        // 存储股票名称
+                            Industry = analysis.Industry,                // 存储股票所属行业
+                            Price = Math.Round(closePrice, 4),          // 当前价格
+                            // 指数信息
+                            BenchmarkKLineReturn = Math.Round(analysis.BenchmarkKLineReturn, 4), // 基准指数收益率
+                            // 日信息
+                            DayKLineReturn = Math.Round(analysis.DayKLineReturn, 4), // 日K线收益率
+                            // macd
+                            DayMacd = Math.Round(analysis.DayMacd, 2), // 日MACD
+                            DayMacdHistogram = Math.Round(analysis.DayMacd.Histogram, 2), // 日MACD柱状图
+                            DayMacdSignal = Math.Round(analysis.DayMacd.Signal, 2), // 日MACD信号线
+     
+                            // 开盘信息
+                            OpenReturn = Math.Round(analysis.OpenReturn, 4), // 今日开盘涨幅
+                            // 分钟K线信息
+                            // 价格
+                            MinuteKLineReturn = Math.Round(analysis.MinuteKLineReturn, 4), // 分钟K线收益率
+                            MinutePriceBreakout = analysis.MinutePriceBreakout, // 分钟突破前30分钟高点
+                            // 量比
+                            MinuteVolumeRatio = Math.Round(analysis.MinuteVolumeRatio, 4), // 分钟量比
+                            MinuteVolumeRatio3 = Math.Round(analysis.MinuteVolumeRatio3, 4), // 与前3周期平均量比
+                            // Ema斜率
+                            MinuteEmaSlope = Math.Round(analysis.MinuteEmaSlope, 4), // 分钟Ema斜率
+                            // MACD背离
+                            MinuteMacdDivergence = analysis.MinuteMacdDivergence, // 分钟MACD背离
+                            // RSI
+                            MinuteRsi = Math.Round(analysis.MinuteRsiValue, 2), // 分钟RSI
+
+
                         };
                         // 将数据项添加到队列中
                         GlobalRealDataItemList.Items.Add(item);

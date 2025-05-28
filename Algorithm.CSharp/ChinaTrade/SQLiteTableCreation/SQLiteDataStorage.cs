@@ -109,23 +109,38 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         // 添加自增主键
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
+
+        // Y 特征
+        public decimal Lable { get; set; } // 这是Y值，表示第二天的收益率
+        // 基本信息
         public string Date { get; set; }
         public string Name { get; set; }
         public string Industry { get; set; }
+
+        public decimal Price { get; set; } // 当前价格，这是X值，表示当前的价格
+        // 指数信息
+        public decimal BenchmarkKLineReturn { get; set; } // 指数收益率，这是X值，表示指数的收益率
         // 日线X 特征
+        public decimal DayKLineReturn { get; set; } // 日K线收益率，这是X值，表示日K线的收益率
+        public decimal DayMacd { get; set; } // 
+        public decimal DayMacdHistogram { get; set; } // 日MACD柱状图，这是X值，表示日MACD柱状图的值
+        public decimal DayMacdSignal { get; set; } // 日MACD信号线，这是X值，表示日MACD信号线的值
+        // 开盘信息
         public decimal OpenReturn { get; set; } // 今日开盘涨幅，这是X值，表示今日开盘涨幅
 
         // 分钟X 特征
+        // 价格
         public decimal MinuteKLineReturn { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
+        public decimal MinutePriceBreakout { get; set; } // 分钟突破前30分钟高点，这是X值，表示分钟价格是否突破前30分钟的高点
+        // 量比
         public decimal MinuteVolumeRatio { get; set; } // 分钟量比，这是X值，表示分钟的量比
         public decimal MinuteVolumeRatio3 { get; set; } // 与前3周期平均量比，这是X值，表示与前3周期的平均量比
+        //EMA
         public decimal MinuteEmaSlope { get; set; } // 分钟Ema斜率，这是X值，表示分钟Ema的斜率
+        //MACD
         public decimal MinuteMacdDivergence { get; set; } // 分钟MACD背离，这是X值，表示分钟MACD的背离情况
+        // RSI
         public decimal MinuteRsi { get; set; } // 分钟RSI，这是X值，表示分钟RSI的值
-
-        public decimal MinutePriceBreakout { get; set; } // 分钟突破前30分钟高点，这是X值，表示分钟价格是否突破前30分钟的高点
-        // Y 特征
-        public decimal Lable { get; set; } // 这是Y值，表示第二天的收益率
     }
 
     public static class GlobalRealDataItemList
