@@ -88,9 +88,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             DayKLineReturn = Math.Round(analysis.DayKLineReturn, 4), // 日K线收益率
                             // macd
                             DayMacd = Math.Round(analysis.DayMacd, 2), // 日MACD
-                            DayMacdHistogram = Math.Round(analysis.DayMacd.Histogram, 2), // 日MACD柱状图
+                            DayMacdHistogram = Math.Round(analysis.DayMacd.Histogram*2, 2), // 日MACD柱状图
                             DayMacdSignal = Math.Round(analysis.DayMacd.Signal, 2), // 日MACD信号线
-     
                             // 开盘信息
                             OpenReturn = Math.Round(analysis.OpenReturn, 4), // 今日开盘涨幅
                             // 分钟K线信息
