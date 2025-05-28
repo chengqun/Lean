@@ -43,23 +43,27 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                     var analysis = _macdAnalysis[symbol];
                     if (analysis != null )
                     {
-                        System.Console.WriteLine($"|时间: {time}" +
+                        System.Console.WriteLine(
+                                                // Y标签
+                                                $"|未来收益率 {analysis.MinuteNextDayReturn:F4}" +
+                                                // 基本信息
+                                                $"|时间: {time}" +
                                                 $"|名称:{analysis.Name}" +
                                                 $"|行业{analysis.Industry}" +
-                                                // $"|日K线收益率: {analysis.DayKLineReturn:F4}" +
-                                                // $"|指数收益率: {analysis.BenchmarkKLineReturn:F4}" +
-                                                // // Day的X特征
-                                                // $"|今日开盘涨幅:{analysis.DayNextOpenReturn:F4}" +
-                                                // Y
-                                                $"|未来收益率 {analysis.MinuteNextDayReturn:F4}" 
-                                                // // 分钟的X特征
-                                                // $"|分钟K线收益率: {analysis.MinuteKLineReturn:F4}" +
-                                                // $"|分钟量比: {analysis.MinuteVolumeRatio:F4}" +
-                                                // $"|分钟量比3: {analysis.MinuteVolumeRatio3:F4}" +
-                                                // $"|分钟Ema斜率: {analysis.MinuteEmaSlope:F4}" +
-                                                // $"|分钟macd背离: {analysis.MinuteMacdDivergence}" +
-                                                // $"|分钟RSI: {analysis.MinuteRsi:F4}" +
-                                                // $"|分钟突破前30分钟高点: {analysis.MinutePriceBreakout}"
+                                                // 指数信息
+                                                $"|指数收益率: {analysis.BenchmarkKLineReturn:F4}" +
+                                                // 日信息
+                                                $"|日K线收益率: {analysis.DayKLineReturn:F4}" +
+                                                // 开盘信息
+                                                $"|今日开盘涨幅:{analysis.OpenReturn:F4}" +
+                                                // 分钟K线信息
+                                                $"|分钟K线收益率: {analysis.MinuteKLineReturn:F4}" +
+                                                $"|分钟量比: {analysis.MinuteVolumeRatio:F4}" +
+                                                $"|分钟量比3: {analysis.MinuteVolumeRatio3:F4}" +
+                                                $"|分钟Ema斜率: {analysis.MinuteEmaSlope:F4}" +
+                                                $"|分钟macd背离: {analysis.MinuteMacdDivergence}" +
+                                                $"|分钟RSI: {analysis.MinuteRsi:F4}" +
+                                                $"|分钟突破前30分钟高点: {analysis.MinutePriceBreakout}"
 
                             );
                         // 保存 RealDataItem 到数据库 ，自增ID不进行赋值
