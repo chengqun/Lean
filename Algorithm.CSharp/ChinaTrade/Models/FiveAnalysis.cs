@@ -40,6 +40,8 @@ public class FiveAnalysis
     // 分钟线指标
     // 分钟K线收益率
     public decimal MinuteKLineReturn { get; private set; }
+    // 距离昨日收盘收益
+    public decimal MinuteKLineReturnFromPreviousClose { get; private set; }
     // 价格突破前30分钟高点
     public decimal MinutePriceBreakout { get; private set; }
     // 量比 
@@ -84,7 +86,23 @@ public class FiveAnalysis
     {
         try
         {
-            // 价格
+
+            // 获取日线数据
+            var nextDayClose = DayNext2Close.Current?.Value ?? 0;
+            var nextDayOpen = NextOpen.Current?.Value ?? 0;
+
+            var dayClose = DayClose.Current?.Value ?? 0;
+            var previousDayClose1 = DayClose.Samples > 1 ? DayClose[1]?.Value ?? 0 : 0;
+            DayKLineReturn = previousDayClose1 != 0 ? (dayClose / previousDayClose1 - 1) : 0;
+            // 获取指数
+            var benchmarkClose = BenchmarkClose.Current?.Value ?? 0;
+            var previousbenchmarkClose1 = BenchmarkClose.Samples > 1 ? BenchmarkClose[1]?.Value ?? 0 : 0;
+            BenchmarkKLineReturn = previousbenchmarkClose1 != 0 ? (benchmarkClose / previousbenchmarkClose1 - 1) : 0;
+
+            // 定义X
+            OpenReturn = dayClose != 0 ? (nextDayOpen / dayClose - 1) : 0;
+
+            // 分钟线指标
             var closePrice = MinuteClose.Current?.Value ?? 0;
             var previousClosePrice1 = MinuteClose.Samples > 1 ? MinuteClose[1]?.Value ?? 0 : 0;
             var previousClosePrice2 = MinuteClose.Samples > 2 ? MinuteClose[2]?.Value ?? 0 : 0;
@@ -103,6 +121,8 @@ public class FiveAnalysis
                 MinutePriceBreakout = 1; // 表示价格突破前30分钟高点
             }
             MinuteKLineReturn = previousClosePrice1 != 0 ? (closePrice / previousClosePrice1 - 1) : 0;
+            // 距离昨日收盘收益
+            MinuteKLineReturnFromPreviousClose = dayClose != 0 ? (closePrice / dayClose - 1) : 0;
 
             // 成交量
             var volume = MinuteVolume.Current?.Value ?? 0;
@@ -143,20 +163,7 @@ public class FiveAnalysis
                 MinuteMacdDivergence = 0; // 没有背离
             }
 
-            // 获取日线数据
-            var nextDayClose = DayNext2Close.Current?.Value ?? 0;
-            var nextDayOpen = NextOpen.Current?.Value ?? 0;
 
-            var dayClose = DayClose.Current?.Value ?? 0;
-            var previousDayClose1 = DayClose.Samples > 1 ? DayClose[1]?.Value ?? 0 : 0;
-            DayKLineReturn = previousDayClose1 != 0 ? (dayClose / previousDayClose1 - 1) : 0;
-            // 获取指数
-            var benchmarkClose = BenchmarkClose.Current?.Value ?? 0;
-            var previousbenchmarkClose1 = BenchmarkClose.Samples > 1 ? BenchmarkClose[1]?.Value ?? 0 : 0;
-            BenchmarkKLineReturn = previousbenchmarkClose1 != 0 ? (benchmarkClose / previousbenchmarkClose1 - 1) : 0;
-
-            // 定义X
-            OpenReturn = dayClose != 0 ? (nextDayOpen / dayClose - 1) : 0;
             // 定义Y
             MinuteNextDayReturn = closePrice != 0 ? (nextDayClose / closePrice - 1) : 0;
 

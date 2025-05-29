@@ -63,6 +63,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                                                 $"|今日开盘涨幅:{analysis.OpenReturn:F4}" +
                                                 // 分钟K线信息
                                                 $"|分钟K线收益率: {analysis.MinuteKLineReturn:F4}" +
+                                                $"|分钟K线距离昨日收盘收益: {analysis.MinuteKLineReturnFromPreviousClose:F4}" +
                                                 $"|分钟突破前30分钟高点: {analysis.MinutePriceBreakout}" +
                                                 // 量比
                                                 $"|分钟量比: {analysis.MinuteVolumeRatio:F4}" +
@@ -102,13 +103,15 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 分钟K线信息
                             // 价格
                             MinuteKLineReturn = Math.Round(analysis.MinuteKLineReturn, 4), // 分钟K线收益率
+                            MinuteKLineReturnFromPreviousClose = Math.Round(analysis.MinuteKLineReturnFromPreviousClose, 4), // 分钟K线距离昨日收盘收益
                             MinutePriceBreakout = analysis.MinutePriceBreakout, // 分钟突破前30分钟高点
                             // 量比
                             MinuteVolumeRatio = Math.Round(analysis.MinuteVolumeRatio, 4), // 分钟量比
                             MinuteVolumeRatio3 = Math.Round(analysis.MinuteVolumeRatio3, 4), // 与前3周期平均量比
                             // Ema斜率
                             MinuteEmaSlope = Math.Round(analysis.MinuteEmaSlope, 4), // 分钟Ema斜率
-                            // MACD背离
+                            // MACD
+                            MinuteMacdDivergence = analysis.MinuteMacdDivergence, // 分钟MACD背离
                             MinMACD = Math.Round(analysis.MinuteMacd.Histogram*2, 2) , // 
                             MinDIFF = Math.Round(analysis.MinuteMacd, 2), // 分钟MACD柱状图
                             MinDEA = Math.Round(analysis.MinuteMacd.Signal, 2), // 分钟MACD信号线
