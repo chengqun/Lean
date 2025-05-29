@@ -21,6 +21,7 @@ public class FiveAnalysis
     public IndicatorBase<IndicatorDataPoint> DayNext2Close { get; private set; }  
     public IndicatorBase<IndicatorDataPoint> NextOpen { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayClose { get; private set; }
+    public IndicatorBase<IndicatorDataPoint> DayVolume { get; private set; }
     // 分钟线
     public IndicatorBase<IndicatorDataPoint> MinuteClose { get; private set; }
     public IndicatorBase<IndicatorDataPoint> MinuteVolume { get;private set; }
@@ -65,10 +66,12 @@ public class FiveAnalysis
         // 订阅更新事件
         BenchmarkClose.Updated += (sender, updated) => UpdateMinuteStatus();
         // 日线指标更新事件
+        DayMacd.Updated += (sender, updated) => UpdateMinuteStatus();
         DayNext2Close.Updated += (sender, updated) => UpdateMinuteStatus();
         NextOpen.Updated += (sender, updated) => UpdateMinuteStatus();
         DayClose.Updated += (sender, updated) => UpdateMinuteStatus();
-        DayMacd.Updated += (sender, updated) => UpdateMinuteStatus();
+        DayVolume.Updated += (sender, updated) => UpdateMinuteStatus();
+
         // 分钟线指标更新事件
         MinuteClose.Updated += (sender, updated) => UpdateMinuteStatus();
         MinuteVolume.Updated += (sender, updated) => UpdateMinuteStatus();
@@ -176,10 +179,11 @@ public class FiveAnalysis
 
         // 日线字段
         var daysymbol = _algo.AddData<ApiDayCustomData>(code, Resolution.Daily, TimeZones.Utc).Symbol;
+        DayMacd = _algo.MACD(daysymbol, 12, 26, 9, MovingAverageType.Exponential);
         DayNext2Close = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Next2Close));
         NextOpen = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).NextOpen));
         DayClose = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
-        DayMacd = _algo.MACD(daysymbol, 12, 26, 9, MovingAverageType.Exponential);
+        DayVolume = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Volume));
         // 指数
         var benchmarkSymbol = _algo.AddData<ApiDayCustomData>("sh.000001", Resolution.Daily, TimeZones.Utc).Symbol;
         BenchmarkClose = _algo.Identity(benchmarkSymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
@@ -208,12 +212,14 @@ public class FiveAnalysis
                 BenchmarkClose.Update(bar.EndTime, customData.Close);
             }
         }
+        _algo.Debug($"{benchmarkSymbol} 指数预热完成，状态：{BenchmarkClose.IsReady}");
         // day的指标
         var dayhistoryList = _algo.History<ApiDayCustomData>(daySymbol, requiredBars * 2, Resolution.Daily)?.ToList();
         if (dayhistoryList == null || !dayhistoryList.Any())
         {
             return;
         }
+
         foreach (var bar in dayhistoryList.OrderBy(x => x.Time))
         {
             DayMacd.Update(bar.EndTime, bar.Close);
@@ -224,6 +230,7 @@ public class FiveAnalysis
                 NextOpen.Update(bar.EndTime, customData.NextOpen);
             }
         }
+        _algo.Debug($"{daySymbol} 日指标预热完成，MACD状态：{DayMacd.IsReady}");
         // 分钟
         var historyList = _algo.History<Api5MinCustomData>(minSymbol, requiredBars * 2, Resolution.Minute)?.ToList();
         if (historyList == null || !historyList.Any())
@@ -241,5 +248,6 @@ public class FiveAnalysis
                 MinuteVolume.Update(bar.EndTime, customData.Volume);
             }
         }
+        _algo.Debug($"{minSymbol} 分钟指标预热完成，MACD状态：{MinuteMacd.IsReady}, EMA状态：{MinuteEma.IsReady}, RSI状态：{MinuteRsi.IsReady}");
     }
 }
