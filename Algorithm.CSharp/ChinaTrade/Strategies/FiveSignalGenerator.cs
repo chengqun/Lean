@@ -132,7 +132,6 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                     {
                         System.Console.WriteLine($"时间: {time}, 收盘价: {closePrice}, MACD指标或收盘价指标数据尚未准备好");
                     }
-                    _macdAnalysis[symbol] = analysis; // 更新分析数据,主要是买入价
                 }
                 catch (NullReferenceException ex)
                 {
