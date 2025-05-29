@@ -122,9 +122,12 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public decimal BenchmarkKLineReturn { get; set; } // 指数收益率，这是X值，表示指数的收益率
         // 日线X 特征
         public decimal DayKLineReturn { get; set; } // 日K线收益率，这是X值，表示日K线的收益率
+        public decimal DayVolumeRatio { get; set; } // 日量比，这是X值，表示日的量比
+        public decimal DayVolumeRatio3 { get; set; } // 与前3周期平均量比，这是X值，表示与前3周期的平均量比
         public decimal DayMacd { get; set; } // 
         public decimal DayDIFF { get; set; } // 日MACD柱状图，这是X值，表示日MACD柱状图的值
         public decimal DayDEA { get; set; } // 日MACD信号线，这是X值，表示日MACD信号线的值
+        public decimal DayMacdTrend { get; set; } // 日MACD趋势，这是X值，表示日MACD的趋势
         // 开盘信息
         public decimal OpenReturn { get; set; } // 今日开盘涨幅，这是X值，表示今日开盘涨幅
 
@@ -151,5 +154,6 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
     public static class GlobalRealDataItemList
     {
         public static readonly List<RealDataItem> Items = new List<RealDataItem>();
+        
     }
 }

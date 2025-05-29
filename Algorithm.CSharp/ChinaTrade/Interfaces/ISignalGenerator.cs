@@ -19,6 +19,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces
     {
         public Symbol Symbol { get; set; }
         public OrderDirection Direction { get; set; } // Buy/Sell
+        public decimal  Weight  { get; set; }
         public String OperationReson { get; set; }
         public decimal SuggestedPrice { get; set; }
         public DateTime SignalTime { get; set; }

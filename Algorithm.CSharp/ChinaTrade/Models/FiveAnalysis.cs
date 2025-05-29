@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
 using QuantConnect.Indicators;
 using QuantConnect.Orders;
 
@@ -36,7 +38,15 @@ public class FiveAnalysis
     // 定义X
     public decimal BenchmarkKLineReturn { get; private set; }
     public decimal DayKLineReturn { get; private set; }
+    // 量比 
+    public decimal DayVolumeRatio { get; private set; }
+    // 与前3周期平均量比
+    public decimal DayVolumeRatio3 { get; private set; }
     public decimal OpenReturn { get; set; } // 今日开盘涨幅
+
+    // 日线MACD指标趋势
+    public decimal DayMacdTrend { get; private set; } // 日MACD柱状图
+
     // 分钟线指标
     // 分钟K线收益率
     public decimal MinuteKLineReturn { get; private set; }
@@ -55,9 +65,17 @@ public class FiveAnalysis
     public decimal MinuteMacdDivergence { get; private set; }
     // 分钟RSI值
     public decimal MinuteRsiValue { get; private set; }
+
+    // 定义一个分数，假设是模型分生成的
+    public decimal Score { get; private set; }
     // 定义Y
     public decimal MinuteNextDayReturn { get; private set; }
+    public List<TradingSignal> TradeHistory { get; } = new List<TradingSignal>();
+    public TradingSignal LastTrade => TradeHistory.Count > 0 ? TradeHistory.Last() : null;
+    public TradingSignal LastBuy => TradeHistory.LastOrDefault(r => r.Direction == OrderDirection.Buy);
+    public TradingSignal LastSell => TradeHistory.LastOrDefault(r => r.Direction == OrderDirection.Sell);
 
+    public TradingSignal TradingSignal { get; set; }
     public FiveAnalysis(QCAlgorithm algo, string code, string name, string industry)
     {
         Name = name.ToString();
@@ -94,6 +112,40 @@ public class FiveAnalysis
             var dayClose = DayClose.Current?.Value ?? 0;
             var previousDayClose1 = DayClose.Samples > 1 ? DayClose[1]?.Value ?? 0 : 0;
             DayKLineReturn = previousDayClose1 != 0 ? (dayClose / previousDayClose1 - 1) : 0;
+
+            // 获取日线成交量
+            var dayVolume = DayVolume.Current?.Value ?? 0;
+            var previousDayVolume1 = DayVolume.Samples > 1 ? DayVolume[1]?.Value ?? 0 : 0;
+            var previousDayVolume2 = DayVolume.Samples > 2 ? DayVolume[2]?.Value ?? 0 : 0;
+            var previousDayVolume3 = DayVolume.Samples > 3 ? DayVolume[3]?.Value ?? 0 : 0;
+            // 前三根K线的平均量比
+            var averageDayVolume = (previousDayVolume1 + previousDayVolume2 + previousDayVolume3) / 3;
+            // 量比
+            DayVolumeRatio = previousDayVolume1 != 0 ? (dayVolume / previousDayVolume1) : 0;
+            DayVolumeRatio3 = averageDayVolume != 0 ? (dayVolume / averageDayVolume) : 0;
+
+            DayMacdTrend = 0;
+            if (DayMacd.IsReady)
+            {
+                var daymacd = 2 * DayMacd.Histogram.Current?.Value ?? 0;
+                var dayDIFF = DayMacd.Current?.Value ?? 0; // 日MACD柱状图
+                var dayDEA = DayMacd.Signal.Current?.Value ?? 0; // 日MACD信号线
+
+                if (dayDIFF > dayDEA && daymacd > 0.2m)
+                {
+                    DayMacdTrend = 1; // 上升趋势
+                }
+                else if (dayDIFF < dayDEA && daymacd < -0.2m)
+                {
+                    DayMacdTrend = -1; // 下降趋势
+                }
+                else
+                {
+                    DayMacdTrend = 0; // 震荡趋势
+                }
+            }
+
+
             // 获取指数
             var benchmarkClose = BenchmarkClose.Current?.Value ?? 0;
             var previousbenchmarkClose1 = BenchmarkClose.Samples > 1 ? BenchmarkClose[1]?.Value ?? 0 : 0;
@@ -162,8 +214,34 @@ public class FiveAnalysis
             {
                 MinuteMacdDivergence = 0; // 没有背离
             }
-
-
+            // 初始化，不操作
+            TradingSignal = new TradingSignal()
+            {
+                Symbol = Symbol,
+                Direction = OrderDirection.Hold,
+                Weight = 0.01m,
+                //操作名称
+                OperationReson = "",
+                SuggestedPrice = MinuteClose,
+                SignalTime = MinuteClose.Current?.EndTime ?? DateTime.MinValue,
+            };
+            // 判断要买
+            if (
+                MinuteRsi < 7
+                && MinuteVolumeRatio > 5
+                && MinuteVolumeRatio3 > 5
+                && MinuteKLineReturnFromPreviousClose < -0.023m
+            )
+            {
+                TradingSignal.Direction = OrderDirection.Buy;
+            }
+            
+            // 判断要卖
+            // 只记录买卖的历史。
+            if (TradingSignal.Direction != OrderDirection.Hold)
+            {
+                TradeHistory.Add(TradingSignal); //保存历史买入，卖出
+            }
             // 定义Y
             MinuteNextDayReturn = closePrice != 0 ? (nextDayClose / closePrice - 1) : 0;
 
@@ -232,6 +310,7 @@ public class FiveAnalysis
             DayMacd.Update(bar.EndTime, bar.Close);
             if (bar is ApiDayCustomData customData)
             {
+                DayVolume.Update(bar.EndTime, customData.Volume);
                 DayNext2Close.Update(bar.EndTime, customData.Next2Close);
                 DayClose.Update(bar.EndTime, customData.Close);
                 NextOpen.Update(bar.EndTime, customData.NextOpen);
@@ -257,4 +336,6 @@ public class FiveAnalysis
         }
         _algo.Debug($"{minSymbol} 分钟指标预热完成，MACD状态：{MinuteMacd.IsReady}, EMA状态：{MinuteEma.IsReady}, RSI状态：{MinuteRsi.IsReady}");
     }
+
+
 }
