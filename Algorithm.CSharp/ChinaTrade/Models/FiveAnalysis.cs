@@ -124,11 +124,17 @@ public class FiveAnalysis
             var previousDayVolume1 = DayVolume.Samples > 1 ? DayVolume[1]?.Value ?? 0 : 0;
             var previousDayVolume2 = DayVolume.Samples > 2 ? DayVolume[2]?.Value ?? 0 : 0;
             var previousDayVolume3 = DayVolume.Samples > 3 ? DayVolume[3]?.Value ?? 0 : 0;
+            var previousDayVolume4 = DayVolume.Samples > 4? DayVolume[4]?.Value?? 0 : 0;
+            var previousDayVolume5 = DayVolume.Samples > 5? DayVolume[5]?.Value?? 0 : 0;
+            var previousDayVolume6 = DayVolume.Samples > 6? DayVolume[6]?.Value?? 0 : 0;
             // 前三根K线的平均量比
             var averageDayVolume = (previousDayVolume1 + previousDayVolume2 + previousDayVolume3) / 3;
             // 量比
             DayVolumeRatio = previousDayVolume1 != 0 ? (dayVolume / previousDayVolume1) : 0;
             DayVolumeRatio3 = averageDayVolume != 0 ? (dayVolume / averageDayVolume) : 0;
+            
+            // 日线MACD指标趋势
+            
 
             DayMacdTrend = 0;
             if (DayMacd.IsReady)
@@ -178,6 +184,12 @@ public class FiveAnalysis
             MinutePriceBreakout = closePrice > maxPreviousClosePrice && previousClosePrice1 <= maxPreviousClosePrice;
 
             MinuteKLineReturn = previousClosePrice1 != 0 ? (closePrice / previousClosePrice1 - 1) : 0;
+            var previousMinuteKLineReturn1 = previousClosePrice1!= 0? (previousClosePrice1 / previousClosePrice2 - 1) : 0;
+            var previousMinuteKLineReturn2 = previousClosePrice2!= 0? (previousClosePrice2 / previousClosePrice3 - 1) : 0;
+
+            // 9点35下跌，9点40底部盘整，9点45收复9点35的下跌。9点45弱转强时买入。成交量时9点35最大，9点40最小，9点45中等。
+            // 但是，这三根成交量相比，前一日的均是放量。
+            var isReversal = previousMinuteKLineReturn2 < -0.02m && previousMinuteKLineReturn1 > 0 && MinuteKLineReturn > 0.02m;
             // 价格突破3均线
             var ema3 = MinuteEma3.Current?.Value?? 0;
             var ema10 = MinuteEma10.Current?.Value?? 0;
@@ -202,7 +214,6 @@ public class FiveAnalysis
             // 量比
             MinuteVolumeRatio = previousVolume1 != 0 ? (volume / previousVolume1) : 0;
             MinuteVolumeRatio3 = averageVolume != 0 ? (volume / averageVolume) : 0;
-
             // 成交量EMA斜率
             var emaValue = MinuteEma3.Current?.Value ?? 0;
             var previousEmaValue = MinuteEma3.Samples > 1 ? MinuteEma3[1]?.Value ?? 0 : 0;
