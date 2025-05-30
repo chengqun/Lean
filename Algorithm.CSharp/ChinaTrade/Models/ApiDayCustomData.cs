@@ -53,13 +53,14 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
             var timestamp = DateTime.UtcNow.Ticks;
             if (isLiveMode)
             {
+                
                 return new SubscriptionDataSource(
-                    $"http://43.142.139.247/api/dayapi/{config.Symbol.Value}?_t={timestamp}",
+                    $"{Globals.Api}/api/dayapi/{config.Symbol.Value}?_t={timestamp}",
                     SubscriptionTransportMedium.Rest);
             }
             // 返回的是一个csv，正常历史数据只用请求一次呀。
             return new SubscriptionDataSource(
-                $"http://43.142.139.247/api/dayapi/csv/{config.Symbol.Value}?_t={timestamp}",
+                    $"{Globals.Api}/api/dayapi/csv/{config.Symbol.Value}?_t={timestamp}",
                 SubscriptionTransportMedium.RemoteFile);
         }
 
