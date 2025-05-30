@@ -135,7 +135,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         // 价格
         public decimal MinuteKLineReturn { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
         public decimal MinuteKLineReturnFromPreviousClose { get; set; } // 分钟K线距离昨日收盘收益，这是X值，表示分钟K线距离昨日收盘的收益率
-        public decimal MinutePriceBreakout { get; set; } // 分钟突破前30分钟高点，这是X值，表示分钟价格是否突破前30分钟的高点
+        public bool MinutePriceBreakout { get; set; } // 分钟突破前30分钟高点，这是X值，表示分钟价格是否突破前30分钟的高点
+        public bool MinutePriceBreakoutEma { get; set; } // 分钟突破前30分钟低点，这是X值，表示分钟价格是否突破前30分钟的低点
         // 量比
         public decimal MinuteVolumeRatio { get; set; } // 分钟量比，这是X值，表示分钟的量比
         public decimal MinuteVolumeRatio3 { get; set; } // 与前3周期平均量比，这是X值，表示与前3周期的平均量比

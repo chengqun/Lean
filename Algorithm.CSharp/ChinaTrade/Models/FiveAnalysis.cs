@@ -26,15 +26,17 @@ public class FiveAnalysis
     public IndicatorBase<IndicatorDataPoint> DayVolume { get; private set; }
     // 分钟线
     public IndicatorBase<IndicatorDataPoint> MinuteClose { get; private set; }
-    public IndicatorBase<IndicatorDataPoint> MinuteVolume { get;private set; }
+    public IndicatorBase<IndicatorDataPoint> MinuteOpen { get; private set; }
+    public IndicatorBase<IndicatorDataPoint> MinuteVolume { get; private set; }
     public MovingAverageConvergenceDivergence MinuteMacd { get; private set; }
-    public ExponentialMovingAverage MinuteEma { get; private set;}
+    public ExponentialMovingAverage MinuteEma3 { get; private set;}
+    public ExponentialMovingAverage MinuteEma10 { get; private set;}
+    public ExponentialMovingAverage MinuteEma20 { get; private set;}
+    public ExponentialMovingAverage MinuteEma60 { get; private set;}
     public RelativeStrengthIndex MinuteRsi { get;private set; }
-
     public Symbol Symbol { get; set; }
     public string Name { get; set; }
     public string Industry { get; set; }
-
     // 定义X
     public decimal BenchmarkKLineReturn { get; private set; }
     public decimal DayKLineReturn { get; private set; }
@@ -46,14 +48,14 @@ public class FiveAnalysis
 
     // 日线MACD指标趋势
     public decimal DayMacdTrend { get; private set; } // 日MACD柱状图
-
     // 分钟线指标
     // 分钟K线收益率
     public decimal MinuteKLineReturn { get; private set; }
     // 距离昨日收盘收益
     public decimal MinuteKLineReturnFromPreviousClose { get; private set; }
     // 价格突破前30分钟高点
-    public decimal MinutePriceBreakout { get; private set; }
+    public bool MinutePriceBreakout { get; private set; }
+    public bool MinutePriceBreakoutEma {get;private set;}
     // 量比 
     public decimal MinuteVolumeRatio { get; private set; }
     // 与前3周期平均量比
@@ -94,9 +96,13 @@ public class FiveAnalysis
 
         // 分钟线指标更新事件
         MinuteClose.Updated += (sender, updated) => UpdateMinuteStatus();
+        MinuteOpen.Updated += (sender, updated) => UpdateMinuteStatus();
         MinuteVolume.Updated += (sender, updated) => UpdateMinuteStatus();
         MinuteMacd.Updated += (sender, updated) => UpdateMinuteStatus();
-        MinuteEma.Updated += (sender, updated) => UpdateMinuteStatus();
+        MinuteEma3.Updated += (sender, updated) => UpdateMinuteStatus();
+        MinuteEma10.Updated += (sender, updated) => UpdateMinuteStatus();
+        MinuteEma20.Updated += (sender, updated) => UpdateMinuteStatus();
+        MinuteEma60.Updated += (sender, updated) => UpdateMinuteStatus();   
         MinuteRsi.Updated += (sender, updated) => UpdateMinuteStatus();
     }
 
@@ -162,17 +168,27 @@ public class FiveAnalysis
             var previousClosePrice4 = MinuteClose.Samples > 4 ? MinuteClose[4]?.Value ?? 0 : 0;
             var previousClosePrice5 = MinuteClose.Samples > 5 ? MinuteClose[5]?.Value ?? 0 : 0;
             var previousClosePrice6 = MinuteClose.Samples > 6 ? MinuteClose[6]?.Value ?? 0 : 0;
+
+
             // 30分钟最大值
             var maxPreviousClosePrice = Math.Max(Math.Max(previousClosePrice1, previousClosePrice2),
                 Math.Max(Math.Max(previousClosePrice3, previousClosePrice4),
                 Math.Max(previousClosePrice5, previousClosePrice6)));
             // 价格突破前30分钟高点，前一根没突破，当前根突破了
-            MinutePriceBreakout = 0;
-            if (closePrice > maxPreviousClosePrice && previousClosePrice1 <= maxPreviousClosePrice)
-            {
-                MinutePriceBreakout = 1; // 表示价格突破前30分钟高点
-            }
+            MinutePriceBreakout = closePrice > maxPreviousClosePrice && previousClosePrice1 <= maxPreviousClosePrice;
+
             MinuteKLineReturn = previousClosePrice1 != 0 ? (closePrice / previousClosePrice1 - 1) : 0;
+            // 价格突破3均线
+            var ema3 = MinuteEma3.Current?.Value?? 0;
+            var ema10 = MinuteEma10.Current?.Value?? 0;
+            var ema20 = MinuteEma20.Current?.Value?? 0;
+            var ema60 = MinuteEma60.Current?.Value?? 0;
+            // 定义一个变量突破3均线，前一根没突破，当前根突破了
+            // 重命名变量为 priceBreakoutEma，更具描述性，表示价格突破多条EMA均线
+            var openPrice = MinuteOpen.Current?.Value?? 0;
+            MinutePriceBreakoutEma = closePrice > ema3 && closePrice > ema10 && closePrice > ema20 && closePrice > ema60
+                && openPrice < ema3 && openPrice < ema10 && openPrice < ema20
+            ;
             // 距离昨日收盘收益
             MinuteKLineReturnFromPreviousClose = dayClose != 0 ? (closePrice / dayClose - 1) : 0;
 
@@ -188,8 +204,8 @@ public class FiveAnalysis
             MinuteVolumeRatio3 = averageVolume != 0 ? (volume / averageVolume) : 0;
 
             // 成交量EMA斜率
-            var emaValue = MinuteEma.Current?.Value ?? 0;
-            var previousEmaValue = MinuteEma.Samples > 1 ? MinuteEma[1]?.Value ?? 0 : 0;
+            var emaValue = MinuteEma3.Current?.Value ?? 0;
+            var previousEmaValue = MinuteEma3.Samples > 1 ? MinuteEma3[1]?.Value ?? 0 : 0;
             MinuteEmaSlope = previousEmaValue != 0 ? (emaValue - previousEmaValue) / previousEmaValue : 0;
 
             // RSI
@@ -256,10 +272,14 @@ public class FiveAnalysis
     {
         Symbol = _algo.AddData<Api5MinCustomData>(code, Resolution.Minute, TimeZones.Utc).Symbol;
         MinuteClose = _algo.Identity(Symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Close));
+        MinuteOpen = _algo.Identity(Symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Open));
         MinuteVolume = _algo.Identity(Symbol, Resolution.Minute, (Func<dynamic, decimal>)(x => ((Api5MinCustomData)x).Volume));
 
         MinuteMacd = _algo.MACD(Symbol, 6, 13, 4, MovingAverageType.Exponential);
-        MinuteEma = _algo.EMA(Symbol, 3);
+        MinuteEma3 = _algo.EMA(Symbol, 3);
+        MinuteEma10 = _algo.EMA(Symbol, 10);
+        MinuteEma20 = _algo.EMA(Symbol, 20);
+        MinuteEma60 = _algo.EMA(Symbol, 60);
         MinuteRsi = _algo.RSI(Symbol, 6, MovingAverageType.Exponential);
 
         // 日线字段
@@ -326,16 +346,18 @@ public class FiveAnalysis
         foreach (var bar in historyList.OrderBy(x => x.Time))
         {
             MinuteMacd.Update(bar.EndTime, bar.Close);
-            MinuteEma.Update(bar.EndTime, bar.Close);
+            MinuteEma3.Update(bar.EndTime, bar.Close);
+            MinuteEma10.Update(bar.EndTime, bar.Close);
+            MinuteEma20.Update(bar.EndTime, bar.Close);
+            MinuteEma60.Update(bar.EndTime, bar.Close);
             MinuteRsi.Update(bar.EndTime, bar.Close);
             if (bar is Api5MinCustomData customData)
             {
                 MinuteClose.Update(bar.EndTime, customData.Close);
+                MinuteOpen.Update(bar.EndTime, customData.Open);
                 MinuteVolume.Update(bar.EndTime, customData.Volume);
             }
         }
-        _algo.Debug($"{minSymbol} 分钟指标预热完成，MACD状态：{MinuteMacd.IsReady}, EMA状态：{MinuteEma.IsReady}, RSI状态：{MinuteRsi.IsReady}");
+        _algo.Debug($"{minSymbol} 分钟指标预热完成，MACD状态：{MinuteMacd.IsReady}, EMA状态：{MinuteEma3.IsReady}, RSI状态：{MinuteRsi.IsReady}");
     }
-
-
 }

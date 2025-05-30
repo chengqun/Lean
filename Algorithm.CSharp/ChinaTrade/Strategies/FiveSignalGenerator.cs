@@ -111,6 +111,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             MinuteKLineReturn = Math.Round(analysis.MinuteKLineReturn, 4), // 分钟K线收益率
                             MinuteKLineReturnFromPreviousClose = Math.Round(analysis.MinuteKLineReturnFromPreviousClose, 4), // 分钟K线距离昨日收盘收益
                             MinutePriceBreakout = analysis.MinutePriceBreakout, // 分钟突破前30分钟高点
+                            MinutePriceBreakoutEma = analysis.MinutePriceBreakoutEma, // 分钟突破前30分钟高点
                             // 量比
                             MinuteVolumeRatio = Math.Round(analysis.MinuteVolumeRatio, 4), // 分钟量比
                             MinuteVolumeRatio3 = Math.Round(analysis.MinuteVolumeRatio3, 4), // 与前3周期平均量比
