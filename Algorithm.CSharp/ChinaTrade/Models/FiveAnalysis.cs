@@ -110,7 +110,6 @@ public class FiveAnalysis
     {
         try
         {
-
             // 获取日线数据
             var nextDayClose = DayNext2Close.Current?.Value ?? 0;
             var nextDayOpen = NextOpen.Current?.Value ?? 0;
@@ -137,24 +136,21 @@ public class FiveAnalysis
             
 
             DayMacdTrend = 0;
-            if (DayMacd.IsReady)
-            {
-                var daymacd = 2 * DayMacd.Histogram.Current?.Value ?? 0;
-                var dayDIFF = DayMacd.Current?.Value ?? 0; // 日MACD柱状图
-                var dayDEA = DayMacd.Signal.Current?.Value ?? 0; // 日MACD信号线
+            var daymacd = 2 * DayMacd.Histogram.Current?.Value ?? 0;
+            var dayDIFF = DayMacd.Current?.Value ?? 0; // 日MACD柱状图
+            var dayDEA = DayMacd.Signal.Current?.Value ?? 0; // 日MACD信号线
 
-                if (dayDIFF > dayDEA && daymacd > 0.2m)
-                {
-                    DayMacdTrend = 1; // 上升趋势
-                }
-                else if (dayDIFF < dayDEA && daymacd < -0.2m)
-                {
-                    DayMacdTrend = -1; // 下降趋势
-                }
-                else
-                {
-                    DayMacdTrend = 0; // 震荡趋势
-                }
+            if (dayDIFF > dayDEA && daymacd > 0.2m)
+            {
+                DayMacdTrend = 1; // 上升趋势
+            }
+            else if (dayDIFF < dayDEA && daymacd < -0.2m)
+            {
+                DayMacdTrend = -1; // 下降趋势
+            }
+            else
+            {
+                DayMacdTrend = 0; // 震荡趋势
             }
 
 
@@ -271,7 +267,6 @@ public class FiveAnalysis
             }
             // 定义Y
             MinuteNextDayReturn = closePrice != 0 ? (nextDayClose / closePrice - 1) : 0;
-
         }
         catch (Exception ex)
         {
