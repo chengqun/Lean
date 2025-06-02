@@ -66,17 +66,17 @@ public class FiveAlgorithm : QCAlgorithm
                           // 按照Industry是否为"未知"分成两部分
             var gupiao = jsonData.Where(x => x.Industry.ToString() != "未知").ToList();
             var zhishu = jsonData.Where(x => x.Industry.ToString() == "未知").ToList(); // 这是指数
-                                                                                      // 从文件中读取分片索引
+            var cl = jsonData.Where(x => x.StrategyName.ToString() != "").ToList();                                                                          // 从文件中读取分片索引
             var partFilePath = System.IO.Path.Combine(Globals.DataFolder, "AAshares", "part.txt");
             if (System.IO.File.Exists(partFilePath))
             {
                 var partText = System.IO.File.ReadAllText(partFilePath).Trim();
                 int.TryParse(partText, out part);
             }
-            var partItems = gupiao.Skip(part * size).Take(size).ToList();
+            var partItems = cl.Skip(part * size).Take(size).ToList();
             var singlePartItems = jsonData.Where(x => x.Name.ToString() == "雄帝科技").ToList();
 
-            foreach (var item in singlePartItems)
+            foreach (var item in partItems)
             {
                 var code = item.Code.ToString();
                 var name = item.Name.ToString();
