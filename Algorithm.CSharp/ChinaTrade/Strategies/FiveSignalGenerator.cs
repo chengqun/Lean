@@ -96,6 +96,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 指数信息
                             BenchmarkKLineReturn = Math.Round(analysis.BenchmarkKLineReturn, 4), // 基准指数收益率
                             // 日信息
+                            DayStrategyName = analysis.DayStrategyName, // 日策略名称
                             DayKLineReturn = Math.Round(analysis.DayKLineReturn, 4), // 日K线收益率
                             DayVolumeRatio = Math.Round(analysis.DayVolumeRatio, 4), // 日量比
                             DayVolumeRatio3 = Math.Round(analysis.DayVolumeRatio3, 4), // 日量比3

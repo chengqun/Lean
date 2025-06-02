@@ -5,7 +5,7 @@
   "algorithm-location": "QuantConnect.Algorithm.CSharp.dll",
   "close-automatically": true,
   "data-folder": "../../../Data/",
-  "api-url": "http://43.142.139.247", //127.0.0.1 43.142.139.247
+  "api-url": "http://127.0.0.1", //127.0.0.1 43.142.139.247
   "debugging": false,
   "debugging-method": "LocalCmdline",
   "log-handler": "QuantConnect.Logging.CompositeLogHandler",

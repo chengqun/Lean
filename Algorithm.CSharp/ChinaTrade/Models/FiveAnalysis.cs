@@ -24,6 +24,8 @@ public class FiveAnalysis
     public IndicatorBase<IndicatorDataPoint> NextOpen { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayClose { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayVolume { get; private set; }
+    // 假设将其改为字符串类型，因为 IndicatorBase<String> 可能不太合适，一般策略名用字符串即可
+    public IndicatorBase<IndicatorDataPoint> DayStrategyName { get; private set; }
     // 分钟线
     public IndicatorBase<IndicatorDataPoint> MinuteClose { get; private set; }
     public IndicatorBase<IndicatorDataPoint> MinuteOpen { get; private set; }
@@ -93,7 +95,7 @@ public class FiveAnalysis
         NextOpen.Updated += (sender, updated) => UpdateMinuteStatus();
         DayClose.Updated += (sender, updated) => UpdateMinuteStatus();
         DayVolume.Updated += (sender, updated) => UpdateMinuteStatus();
-
+        DayStrategyName.Updated += (sender, updated) => UpdateMinuteStatus();
         // 分钟线指标更新事件
         MinuteClose.Updated += (sender, updated) => UpdateMinuteStatus();
         MinuteOpen.Updated += (sender, updated) => UpdateMinuteStatus();
@@ -295,6 +297,8 @@ public class FiveAnalysis
         NextOpen = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).NextOpen));
         DayClose = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
         DayVolume = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Volume));
+        DayStrategyName = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ConvertStringToDecimal(((ApiDayCustomData)x).StrategyName)));
+
         // 指数
         var benchmarkSymbol = _algo.AddData<ApiDayCustomData>("sh.000001", Resolution.Daily, TimeZones.Utc).Symbol;
         BenchmarkClose = _algo.Identity(benchmarkSymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
@@ -304,7 +308,29 @@ public class FiveAnalysis
             WarmUpIndicators(Symbol, daysymbol, benchmarkSymbol);
         }
     }
-
+    // 新增一个函数，将字符串转换为 decimal
+    private decimal ConvertStringToDecimal(string input)
+    {
+        // 根据不同的字符串值返回不同的数字
+        // 例如，"长上影试盘战法" 返回 1，"潜龙出水，温和放量" 返回 2，以此类推
+        switch (input)
+        {
+            case "长上影试盘战法":
+                return 1;
+            case "潜龙出水，温和放量":
+                return 2;
+            case "上升通道修整":
+                return 3;
+            case "BOLL突破，均线共振":
+                return 4;
+            default:
+                if (decimal.TryParse(input, out decimal result))
+                {
+                    return result;
+                }
+                return 0; // 转换失败或未匹配到特定字符串时返回 0
+        }
+    }
     public void WarmUpIndicators(Symbol minSymbol, Symbol daySymbol, Symbol benchmarkSymbol)
     {
         // 计算MACD所需最小数据量(26周期+9信号线)
@@ -340,6 +366,7 @@ public class FiveAnalysis
                 DayNext2Close.Update(bar.EndTime, customData.Next2Close);
                 DayClose.Update(bar.EndTime, customData.Close);
                 NextOpen.Update(bar.EndTime, customData.NextOpen);
+                DayStrategyName.Update(bar.EndTime, ConvertStringToDecimal(customData.StrategyName));
             }
         }
         _algo.Debug($"{daySymbol} 日指标预热完成，MACD状态：{DayMacd.IsReady}");
