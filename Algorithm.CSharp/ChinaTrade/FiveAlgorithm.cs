@@ -40,10 +40,10 @@ public class FiveAlgorithm : QCAlgorithm
     {
         SetStartDate(2024, 1, 1);
         SetEndDate(2025, 12, 31);
-        // // // 设置基准货币为人民币
-        SetAccountCurrency("CNY");
-        // 初始化CNY现金账户（假设初始金额为10万）
-        SetCash("CNY", 10000000);
+        // 设置基准货币为人民币
+        // SetAccountCurrency("CNY");
+        // // 初始化CNY现金账户（假设初始金额为10万）
+        // SetCash("CNY", 10000000);
         SetTimeZone(TimeZones.Utc);
         // 设置手续费模型
         SetBrokerageModel(new AStockBrokerageModel());
