@@ -10,7 +10,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Risk
     {
         private readonly QCAlgorithm _algorithm;
         private const decimal StopLossPercent = 0.02m;
-        private const decimal TakeProfitPercent = 0.05m;
+        private const decimal TakeProfitPercent = 0.2m;
 
         public RiskManager(QCAlgorithm algorithm)
         {

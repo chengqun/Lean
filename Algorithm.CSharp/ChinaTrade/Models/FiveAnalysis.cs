@@ -58,6 +58,9 @@ public class FiveAnalysis
     // 价格突破前30分钟高点
     public bool MinutePriceBreakout { get; private set; }
     public bool MinutePriceBreakoutEma {get;private set;}
+
+    // 
+    public bool MinuteWeakToStrong { get; private set; }
     // 量比 
     public decimal MinuteVolumeRatio { get; private set; }
     // 与前3周期平均量比
@@ -185,7 +188,7 @@ public class FiveAnalysis
             var previousMinuteKLineReturn1 = previousClosePrice1!= 0? (previousClosePrice1 / previousClosePrice2 - 1) : 0;
             var previousMinuteKLineReturn2 = previousClosePrice2!= 0? (previousClosePrice2 / previousClosePrice3 - 1) : 0;
 
-            // 9点35下跌，9点40底部盘整，9点45收复9点35的下跌。9点45弱转强时买入。成交量时9点35最大，9点40最小，9点45中等。
+            
             // 但是，这三根成交量相比，前一日的均是放量。
             var isReversal = previousMinuteKLineReturn2 < -0.02m && previousMinuteKLineReturn1 > 0 && MinuteKLineReturn > 0.02m;
             // 价格突破3均线
@@ -219,7 +222,11 @@ public class FiveAnalysis
 
             // RSI
             var rsiValue = MinuteRsi.Current?.Value ?? 0;
-            var previousRsiValue = MinuteRsi.Samples > 1 ? MinuteRsi[1]?.Value ?? 0 : 0;
+            var previousRsiValue1 = MinuteRsi.Samples > 1 ? MinuteRsi[1]?.Value ?? 0 : 0;
+            var previousRsiValue2 = MinuteRsi.Samples > 2? MinuteRsi[2]?.Value?? 0 : 0;
+
+
+
             // RSI背离，价格新高但RSI未同步新高
             MinuteRsiValue = rsiValue;
             // MACD
@@ -240,6 +247,14 @@ public class FiveAnalysis
                 MinuteMacdDivergence = 0; // 没有背离
             }
             // 初始化，不操作
+
+            // 9点35下跌，9点40底部盘整，9点45弱转强，定义一个变量名字叫弱转强
+            MinuteWeakToStrong = 
+              previousRsiValue2 < 10m && previousMinuteKLineReturn2<-0.02m  // 9点35 下跌
+              && previousRsiValue1 < 15m // 9点40 底部盘整
+              && rsiValue > 10m && MinuteKLineReturn>0.02m && MinutePriceBreakoutEma ==true && MinutePriceBreakout==true// 9点45 弱转强
+            ;
+
             TradingSignal = new TradingSignal()
             {
                 Symbol = Symbol,
@@ -252,10 +267,7 @@ public class FiveAnalysis
             };
             // 判断要买
             if (
-                MinuteRsi < 7
-                && MinuteVolumeRatio > 5
-                && MinuteVolumeRatio3 > 5
-                && MinuteKLineReturnFromPreviousClose < -0.023m
+                MinuteWeakToStrong
             )
             {
                 TradingSignal.Direction = OrderDirection.Buy;
