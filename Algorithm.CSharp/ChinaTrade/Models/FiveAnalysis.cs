@@ -24,8 +24,8 @@ public class FiveAnalysis
     public IndicatorBase<IndicatorDataPoint> NextOpen { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayClose { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayVolume { get; private set; }
-    // 假设将其改为字符串类型，因为 IndicatorBase<String> 可能不太合适，一般策略名用字符串即可
     public IndicatorBase<IndicatorDataPoint> DayStrategyName { get; private set; }
+
     // 分钟线
     public IndicatorBase<IndicatorDataPoint> MinuteClose { get; private set; }
     public IndicatorBase<IndicatorDataPoint> MinuteOpen { get; private set; }
@@ -36,6 +36,8 @@ public class FiveAnalysis
     public ExponentialMovingAverage MinuteEma20 { get; private set;}
     public ExponentialMovingAverage MinuteEma60 { get; private set;}
     public RelativeStrengthIndex MinuteRsi { get;private set; }
+
+
     public Symbol Symbol { get; set; }
     public string Name { get; set; }
     public string Industry { get; set; }
@@ -58,7 +60,6 @@ public class FiveAnalysis
     // 价格突破前30分钟高点
     public bool MinutePriceBreakout { get; private set; }
     public bool MinutePriceBreakoutEma {get;private set;}
-
     // 
     public bool MinuteWeakToStrong { get; private set; }
     // 量比 
@@ -122,7 +123,6 @@ public class FiveAnalysis
             var dayClose = DayClose.Current?.Value ?? 0;
             var previousDayClose1 = DayClose.Samples > 1 ? DayClose[1]?.Value ?? 0 : 0;
             DayKLineReturn = previousDayClose1 != 0 ? (dayClose / previousDayClose1 - 1) : 0;
-
             // 获取日线成交量
             var dayVolume = DayVolume.Current?.Value ?? 0;
             var previousDayVolume1 = DayVolume.Samples > 1 ? DayVolume[1]?.Value ?? 0 : 0;
@@ -138,13 +138,17 @@ public class FiveAnalysis
             DayVolumeRatio3 = averageDayVolume != 0 ? (dayVolume / averageDayVolume) : 0;
             
             // 日线MACD指标趋势
-            
-
             DayMacdTrend = 0;
+
             var daymacd = 2 * DayMacd.Histogram.Current?.Value ?? 0;
             var dayDIFF = DayMacd.Current?.Value ?? 0; // 日MACD柱状图
             var dayDEA = DayMacd.Signal.Current?.Value ?? 0; // 日MACD信号线
+            // 计算前一天的DIFF和DEA的差值
+            var previousDayMacd = DayMacd.Samples > 1? 2 * DayMacd.Histogram[1]?.Value ?? 0:0;
+            var previousDayDIFF = DayMacd.Samples > 1? DayMacd[1]?.Value?? 0 : 0;
+            var previousDayDEA = DayMacd.Samples > 1? DayMacd.Signal[1]?.Value?? 0 : 0;
 
+            //试盘-洗盘-拉升
             if (dayDIFF > dayDEA && daymacd > 0.2m)
             {
                 DayMacdTrend = 1; // 上升趋势
@@ -250,9 +254,11 @@ public class FiveAnalysis
 
             // 9点35下跌，9点40底部盘整，9点45弱转强，定义一个变量名字叫弱转强
             MinuteWeakToStrong = 
-              previousRsiValue2 < 10m && previousMinuteKLineReturn2<-0.02m  // 9点35 下跌
+              previousMinuteKLineReturn2<-0.02m  // 9点35 下跌
               && previousRsiValue1 < 15m // 9点40 底部盘整
-              && rsiValue > 10m && MinuteKLineReturn>0.02m && MinutePriceBreakoutEma ==true && MinutePriceBreakout==true// 9点45 弱转强
+              && rsiValue > 10m && MinuteKLineReturn>0.02m
+              && MinutePriceBreakoutEma ==true 
+              && MinutePriceBreakout==true// 9点45 弱转强
             ;
 
             TradingSignal = new TradingSignal()
