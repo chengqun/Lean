@@ -44,6 +44,7 @@ public class FiveAnalysis
     // 定义X
     public decimal BenchmarkKLineReturn { get; private set; }
     public decimal DayKLineReturn { get; private set; }
+    public decimal DayKLineReturn5 { get; private set; }
     // 量比 
     public decimal DayVolumeRatio { get; private set; }
     // 与前3周期平均量比
@@ -122,6 +123,16 @@ public class FiveAnalysis
 
             var dayClose = DayClose.Current?.Value ?? 0;
             var previousDayClose1 = DayClose.Samples > 1 ? DayClose[1]?.Value ?? 0 : 0;
+            var previousDayClose2 = DayClose.Samples > 2? DayClose[2]?.Value?? 0 : 0;
+            var previousDayClose3 = DayClose.Samples > 3? DayClose[3]?.Value?? 0 : 0;
+            var previousDayClose4 = DayClose.Samples > 4? DayClose[4]?.Value?? 0 : 0;
+            var previousDayClose5 = DayClose.Samples > 5? DayClose[5]?.Value?? 0 : 0;
+
+
+            //近5日涨幅
+            DayKLineReturn5 = previousDayClose5!= 0? (dayClose / previousDayClose5 - 1) : 0;
+
+            // 前一天的收盘价
             DayKLineReturn = previousDayClose1 != 0 ? (dayClose / previousDayClose1 - 1) : 0;
             // 获取日线成交量
             var dayVolume = DayVolume.Current?.Value ?? 0;

@@ -55,6 +55,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                                                 $"|指数收益率: {analysis.BenchmarkKLineReturn:F4}" +
                                                 // 日信息
                                                 $"|日K线收益率: {analysis.DayKLineReturn:F4}" +
+                                                // 
                                                 // 量比
                                                 $"|日量比: {analysis.DayVolumeRatio:F4}" +
                                                 $"|日量比3: {analysis.DayVolumeRatio3:F4}" +
@@ -100,6 +101,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 日信息
                             DayStrategyName = analysis.DayStrategyName, // 日策略名称
                             DayKLineReturn = Math.Round(analysis.DayKLineReturn, 4), // 日K线收益率
+                            DayKLineReturn5 = Math.Round(analysis.DayKLineReturn5, 4), // 日K线收益率5
                             DayVolumeRatio = Math.Round(analysis.DayVolumeRatio, 4), // 日量比
                             DayVolumeRatio3 = Math.Round(analysis.DayVolumeRatio3, 4), // 日量比3
                             // macd
