@@ -36,6 +36,15 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
 
         public async Task ExecuteSignals(IEnumerable<TradingSignal> signals, IEnumerable<RiskSignal> risks)
         {
+                // 检查参数是否为 null
+            if (signals == null)
+            {
+                signals = new List<TradingSignal>();
+            }
+            if (risks == null)
+            {
+                risks = new List<RiskSignal>();
+            }
             // 合并 signals 和 risks 中的 Symbol 和 Direction 信息，当 Symbol 相同时，以 Risks 中的信号为准
             var combinedSignals = new Dictionary<Symbol, TradingSignal>();
             // 先处理 TradingSignal 信号

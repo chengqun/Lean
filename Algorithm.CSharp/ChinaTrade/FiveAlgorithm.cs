@@ -78,7 +78,7 @@ public class FiveAlgorithm : QCAlgorithm
             var partItems = gupiao.Skip(part * size).Take(size).ToList();
             var singlePartItems = jsonData.Where(x => x.Name.ToString() == "雄帝科技").ToList();
 
-            foreach (var item in partItems)
+            foreach (var item in singlePartItems)
             {
                 var code = item.Code.ToString();
                 var name = item.Name.ToString();
@@ -102,7 +102,7 @@ public class FiveAlgorithm : QCAlgorithm
         var signals = _signalGenerator.GenerateSignals(data);
         // 检查风险
         var risks = _riskManager.CheckRisks(Portfolio);
-        // 执行订单
+        // // 执行订单
         _orderExecutor.ExecuteSignals(signals, risks).Wait();
     }
 }

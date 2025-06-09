@@ -131,7 +131,11 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                         };
                         // 将数据项添加到队列中
                         GlobalRealDataItemList.Items.Add(item);
-                        signals.Add(analysis.TradingSignal);
+                        // 检查 analysis.TradingSignal 是否为 null
+                        if (analysis.TradingSignal != null)
+                        {
+                            signals.Add(analysis.TradingSignal);
+                        }
                     }
                     else
                     {
@@ -142,7 +146,6 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                 {
                     System.Console.WriteLine($"OnData方法中发生空引用异常: {ex.Message}");
                 }
-                
             }
 
             return signals;
