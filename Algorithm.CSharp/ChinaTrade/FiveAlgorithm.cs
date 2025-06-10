@@ -76,9 +76,9 @@ public class FiveAlgorithm : QCAlgorithm
                 int.TryParse(partText, out part);
             }
             var partItems = gupiao.Skip(part * size).Take(size).ToList();
-            var singlePartItems = jsonData.Where(x => x.Name.ToString() == "雄帝科技").ToList();
+            var singlePartItems = jsonData.Where(x => x.Name.ToString() == "星辉环材").ToList();
 
-            foreach (var item in partItems)
+            foreach (var item in singlePartItems)
             {
                 var code = item.Code.ToString();
                 var name = item.Name.ToString();

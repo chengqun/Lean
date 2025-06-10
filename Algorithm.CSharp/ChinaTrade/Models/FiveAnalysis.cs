@@ -129,8 +129,8 @@ public class FiveAnalysis
             var previousDayClose5 = DayClose.Samples > 5? DayClose[5]?.Value?? 0 : 0;
 
 
-            //近5日涨幅
-            DayKLineReturn5 = previousDayClose5!= 0? (dayClose / previousDayClose5 - 1) : 0;
+            //除了昨天近5日涨幅
+            DayKLineReturn5 = previousDayClose5!= 0? (previousDayClose1 / previousDayClose5 - 1) : 0;
 
             // 前一天的收盘价
             DayKLineReturn = previousDayClose1 != 0 ? (dayClose / previousDayClose1 - 1) : 0;
