@@ -100,6 +100,7 @@ public class FiveAnalysis
         BenchmarkClose.Updated += (sender, updated) => UpdateMinuteStatus();
         // 日线指标更新事件
         DayMacd.Updated += (sender, updated) => UpdateMinuteStatus();
+        DayAtr.Updated += (sender, updated) => UpdateMinuteStatus();
         DayNext2Close.Updated += (sender, updated) => UpdateMinuteStatus();
         NextOpen.Updated += (sender, updated) => UpdateMinuteStatus();
         DayClose.Updated += (sender, updated) => UpdateMinuteStatus();
@@ -152,6 +153,7 @@ public class FiveAnalysis
             DayVolumeRatio = previousDayVolume1 != 0 ? (dayVolume / previousDayVolume1) : 0;
             DayVolumeRatio3 = averageDayVolume != 0 ? (dayVolume / averageDayVolume) : 0;
             
+            var DayAtrValue = DayAtr.Current?.Value ?? 0;
             // 日线MACD指标趋势
             DayMacdTrend = 0;
 
@@ -328,6 +330,7 @@ public class FiveAnalysis
         // 日线字段
         var daysymbol = _algo.AddData<ApiDayCustomData>(code, Resolution.Daily, TimeZones.Utc).Symbol;
         DayMacd = _algo.MACD(daysymbol, 12, 26, 9, MovingAverageType.Exponential);
+        DayAtr = _algo.ATR(daysymbol,14);
         DayNext2Close = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Next2Close));
         NextOpen = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).NextOpen));
         DayClose = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
@@ -395,6 +398,7 @@ public class FiveAnalysis
         foreach (var bar in dayhistoryList.OrderBy(x => x.Time))
         {
             DayMacd.Update(bar.EndTime, bar.Close);
+            DayAtr.Update(bar);
             if (bar is ApiDayCustomData customData)
             {
                 DayVolume.Update(bar.EndTime, customData.Volume);
