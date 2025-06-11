@@ -20,6 +20,7 @@ public class FiveAnalysis
     public IndicatorBase<IndicatorDataPoint> BenchmarkClose { get; private set; }
     // 日线
     public MovingAverageConvergenceDivergence DayMacd { get; private set; }
+    public AverageTrueRange DayAtr {get;private set;} //平均真实波幅
     public IndicatorBase<IndicatorDataPoint> DayNext2Close { get; private set; }  
     public IndicatorBase<IndicatorDataPoint> NextOpen { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayClose { get; private set; }
