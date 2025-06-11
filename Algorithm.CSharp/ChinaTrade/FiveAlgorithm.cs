@@ -15,8 +15,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using Microsoft.ML;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Orders;
@@ -26,6 +28,7 @@ using QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies;
 using QuantConnect.Data;
 using QuantConnect.Indicators;
 using QuantConnect.Orders;
+using static QuantConnect.Algorithm.CSharp.ChinaTrade.MLnet.SampleRegression;
 
 namespace QuantConnect.Algorithm.CSharp.ChinaTrade;
 
@@ -35,7 +38,8 @@ public class FiveAlgorithm : QCAlgorithm
     private IRiskManager _riskManager;
     private IOrderExecutor _orderExecutor;
     private Dictionary<Symbol, FiveAnalysis> _macdAnalysis = new Dictionary<Symbol, FiveAnalysis>();
-
+    
+    private PredictionEngine<ModelInput, ModelOutput> _predictionEngine;
     public override void Initialize()
     {
         SetStartDate(2024, 1, 1);
@@ -51,10 +55,25 @@ public class FiveAlgorithm : QCAlgorithm
         SetBrokerageModel(new AStockBrokerageModel());
         // 初始化数据
         InitializeData();
+
+        // 1. 初始化ML环境
+        var mlContext = new MLContext();
+        // 2. 加载模型
+        var modelPath = Path.Combine(Globals.DataFolder, "AAshares", "SampleRegression.mlnet");
+        ITransformer mlModel;
+        using (var stream = new FileStream(modelPath, FileMode.Open))
+        {
+            mlModel = mlContext.Model.Load(stream, out _);
+        }
+        // 3. 创建预测引擎
+        _predictionEngine = mlContext.Model.CreatePredictionEngine<ModelInput, ModelOutput>(mlModel);
+
         // 初始化模块
-        _signalGenerator = new FiveSignalGenerator(_macdAnalysis);
+        _signalGenerator = new FiveSignalGenerator(_macdAnalysis,_predictionEngine);
         _riskManager = new RiskManager(this);
         _orderExecutor = new OrderExecutor(this);
+
+
     }
 
     private void InitializeData()

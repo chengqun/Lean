@@ -111,6 +111,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public int Id { get; set; }
         // Y 特征
         public decimal Lable { get; set; } // 这是Y值，表示第二天的收益率
+        public float Score { get; set; }
         // 基本信息
         public string Date { get; set; }
         public string Name { get; set; }
@@ -135,6 +136,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         // 分钟X 特征
         // 价格
         public decimal MinuteKLineReturn { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
+        public decimal PreviousMinuteKLineReturn1 { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
+        public decimal PreviousMinuteKLineReturn2 { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
+        public decimal PreviousMinuteKLineReturn3 { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
         public decimal MinuteKLineReturnFromPreviousClose { get; set; } // 分钟K线距离昨日收盘收益，这是X值，表示分钟K线距离昨日收盘的收益率
         public bool MinutePriceBreakout { get; set; } // 分钟突破前30分钟高点，这是X值，表示分钟价格是否突破前30分钟的高点
         public bool MinutePriceBreakoutEma { get; set; } // 分钟突破前30分钟低点，这是X值，表示分钟价格是否突破前30分钟的低点

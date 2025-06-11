@@ -42,6 +42,8 @@
     <PackageReference Include="DynamicInterop" Version="0.9.1" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="QuantConnect.DataSource.Libraries" Version="2.5.*" />
+    <PackageReference Include="Microsoft.ML" Version="3.0.1" />
+    <PackageReference Include="Microsoft.ML.FastTree" Version="3.0.1" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
   </ItemGroup>
   <ItemGroup>

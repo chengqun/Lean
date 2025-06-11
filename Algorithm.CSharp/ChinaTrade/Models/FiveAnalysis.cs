@@ -56,6 +56,9 @@ public class FiveAnalysis
     // 分钟线指标
     // 分钟K线收益率
     public decimal MinuteKLineReturn { get; private set; }
+    public decimal PreviousMinuteKLineReturn1 {get;private set;}
+    public decimal PreviousMinuteKLineReturn2 {get;private set;}
+    public decimal PreviousMinuteKLineReturn3 {get;private set;}
     // 距离昨日收盘收益
     public decimal MinuteKLineReturnFromPreviousClose { get; private set; }
     // 价格突破前30分钟高点
@@ -202,8 +205,10 @@ public class FiveAnalysis
             MinuteKLineReturn = previousClosePrice1 != 0 ? (closePrice / previousClosePrice1 - 1) : 0;
             var previousMinuteKLineReturn1 = previousClosePrice1!= 0? (previousClosePrice1 / previousClosePrice2 - 1) : 0;
             var previousMinuteKLineReturn2 = previousClosePrice2!= 0? (previousClosePrice2 / previousClosePrice3 - 1) : 0;
-
-            
+            var previousMinuteKLineReturn3 = previousClosePrice3!= 0? (previousClosePrice3 / previousClosePrice4 - 1) : 0;
+            PreviousMinuteKLineReturn1 = previousMinuteKLineReturn1;
+            PreviousMinuteKLineReturn2 = previousMinuteKLineReturn2;
+            PreviousMinuteKLineReturn3 = previousMinuteKLineReturn3;
             // 但是，这三根成交量相比，前一日的均是放量。
             var isReversal = previousMinuteKLineReturn2 < -0.02m && previousMinuteKLineReturn1 > 0 && MinuteKLineReturn > 0.02m;
             // 价格突破3均线

@@ -2,23 +2,28 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.ML;
 using QLNet;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
+using QuantConnect.Algorithm.CSharp.ChinaTrade.MLnet;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation;
 using QuantConnect.Data;
 using QuantConnect.Data.Fundamental;
 using QuantConnect.Indicators;
 using QuantConnect.Orders;
+using static QuantConnect.Algorithm.CSharp.ChinaTrade.MLnet.SampleRegression;
 
 namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
 {
     public class FiveSignalGenerator : ISignalGenerator
     {
         private readonly Dictionary<Symbol, FiveAnalysis> _macdAnalysis;
-        public FiveSignalGenerator(Dictionary<Symbol, FiveAnalysis> macdAnalysis)
+        private readonly PredictionEngine<ModelInput, ModelOutput> _predictionEngine;
+        public FiveSignalGenerator(Dictionary<Symbol, FiveAnalysis> macdAnalysis,PredictionEngine<ModelInput, ModelOutput> predictionEngine)
         {
             _macdAnalysis = macdAnalysis;
+            _predictionEngine = predictionEngine;
         }
         public  DateTime ParseShanghaiTime(string dateString) => 
             TimeZoneInfo.ConvertTimeFromUtc(
@@ -86,11 +91,25 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                                                 $"|分钟RSI: {analysis.MinuteRsiValue:F4}"
 
                             );
+                        // Create single instance of sample data from first line of dataset for model input
+                        SampleRegression.ModelInput sampleData = new SampleRegression.ModelInput()
+                        {
+                            PreviousMinuteKLineReturn3 = (float)analysis.PreviousMinuteKLineReturn3,
+                            OpenReturn = (float)analysis.OpenReturn,
+                            PreviousMinuteKLineReturn2 = (float)analysis.PreviousMinuteKLineReturn2,
+                            PreviousMinuteKLineReturn1 = (float)analysis.PreviousMinuteKLineReturn1,
+                            MinuteKLineReturn = (float)analysis.MinuteKLineReturn,
+                            MinuteKLineReturnFromPreviousClose = (float)analysis.MinuteKLineReturnFromPreviousClose,
+                            MinutePriceBreakout =  analysis.MinutePriceBreakout?1f:0f,
+                            MinutePriceBreakoutEma =  analysis.MinutePriceBreakoutEma?1f:0f,
+                        };
+                        var predictionResult = _predictionEngine.Predict(sampleData);
                         // 保存 RealDataItem 到数据库 ，自增ID不进行赋值
                         var item = new RealDataItem
                         {
                             // Y特征
                             Lable = Math.Round(analysis.MinuteNextDayReturn, 4), // 第二天的收益率
+                            Score = predictionResult.Score,
                             // 基本信息
                             Date = time.ToString("yyyy-MM-dd HH:mm:ss"), // 将 DateTime 转换为字符串并使用正确的 forma
                             Name = analysis.Name,                        // 存储股票名称
@@ -114,6 +133,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 分钟K线信息
                             // 价格
                             MinuteKLineReturn = Math.Round(analysis.MinuteKLineReturn, 4), // 分钟K线收益率
+                            PreviousMinuteKLineReturn1 = Math.Round(analysis.PreviousMinuteKLineReturn1, 4), // 分钟K线收益率
+                            PreviousMinuteKLineReturn2 = Math.Round(analysis.PreviousMinuteKLineReturn2, 4), // 分钟K线收益率
+                            PreviousMinuteKLineReturn3 = Math.Round(analysis.PreviousMinuteKLineReturn3, 4), // 分钟K线收益率
                             MinuteKLineReturnFromPreviousClose = Math.Round(analysis.MinuteKLineReturnFromPreviousClose, 4), // 分钟K线距离昨日收盘收益
                             MinutePriceBreakout = analysis.MinutePriceBreakout, // 分钟突破前30分钟高点
                             MinutePriceBreakoutEma = analysis.MinutePriceBreakoutEma, // 分钟突破前30分钟高点
