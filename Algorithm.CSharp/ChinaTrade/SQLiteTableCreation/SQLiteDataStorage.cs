@@ -127,6 +127,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public decimal DayVolumeRatio { get; set; } // 日量比，这是X值，表示日的量比
         public decimal DayVolumeRatio3 { get; set; } // 与前3周期平均量比，这是X值，表示与前3周期的平均量比
         public decimal DayMacd { get; set; } // 
+        public decimal DayATR { get; set; }
         public decimal DayDIFF { get; set; } // 日MACD柱状图，这是X值，表示日MACD柱状图的值
         public decimal DayDEA { get; set; } // 日MACD信号线，这是X值，表示日MACD信号线的值
         public decimal DayMacdTrend { get; set; } // 日MACD趋势，这是X值，表示日MACD的趋势
