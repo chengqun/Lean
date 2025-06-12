@@ -65,7 +65,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                                                 $"|日量比: {analysis.DayVolumeRatio:F4}" +
                                                 $"|日量比3: {analysis.DayVolumeRatio3:F4}" +
                                                 // macd
-                                                $"|日ATR: {analysis.DayAtr:F4}" +
+                                                // $"|日ATR: {analysis.DayAtr:F4}" +
                                                 $"|日MACD: {analysis.DayMacd.Histogram * 2:F2}" +
                                                 $"|日DIFF: {analysis.DayMacd:F2}" +
                                                 $"|日DEA: {analysis.DayMacd.Signal:F2}" +

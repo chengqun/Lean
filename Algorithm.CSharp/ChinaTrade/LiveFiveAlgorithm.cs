@@ -32,10 +32,7 @@ using static QuantConnect.Algorithm.CSharp.ChinaTrade.MLnet.SampleRegression;
 
 namespace QuantConnect.Algorithm.CSharp.ChinaTrade;
 
-/// <summary>
-/// 5分钟算法,backtest代码
-/// </summary>
-public class FiveAlgorithm : QCAlgorithm
+public class LiveFiveAlgorithm : QCAlgorithm
 {
     private ISignalGenerator _signalGenerator;
     private IRiskManager _riskManager;
@@ -87,20 +84,9 @@ public class FiveAlgorithm : QCAlgorithm
             var url = $"http://43.142.139.247/api/dayapi/date/{DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")}";
             var response = client.GetStringAsync(url).Result;
             var jsonData = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(response);
-            int size = 20; // 每份的个数，可根据需要调整
-            int part = 0; // 当前分片的索引
-            // 按照Industry是否为"未知"分成两部分
-            var gupiao = jsonData.Where(x => x.Industry.ToString() != "未知").ToList();
-            var zhishu = jsonData.Where(x => x.Industry.ToString() == "未知").ToList(); // 这是指数                                                                      
-            // 从文件中读取分片索引
-            var partFilePath = System.IO.Path.Combine(Globals.DataFolder, "AAshares", "part.txt");
-            if (System.IO.File.Exists(partFilePath))
-            {
-                var partText = System.IO.File.ReadAllText(partFilePath).Trim();
-                int.TryParse(partText, out part);
-            }
-            var partItems = gupiao.Skip(part * size).Take(size).ToList();
-            foreach (var item in partItems)
+
+            var cl = jsonData.Where(x => x.StrategyName.ToString() == "长上影试盘战法").ToList();
+            foreach (var item in cl)
             {
                 var code = item.Code.ToString();
                 var name = item.Name.ToString();
