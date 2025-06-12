@@ -1,6 +1,6 @@
 {
   "environment": "backtesting", //  "live-paper"  backtesting
-  "algorithm-type-name": "LiveFiveAlgorithm",
+  "algorithm-type-name": "LiveFiveAlgorithm", //LiveFiveAlgorithm FiveAlgorithm
   "algorithm-language": "CSharp",
   "algorithm-location": "QuantConnect.Algorithm.CSharp.dll",
   "close-automatically": true,
