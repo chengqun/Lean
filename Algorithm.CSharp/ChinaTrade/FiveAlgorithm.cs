@@ -80,7 +80,9 @@ public class FiveAlgorithm : QCAlgorithm
     {
         using (var client = new HttpClient())
         {
-            var response = client.GetStringAsync("http://43.142.139.247/api/dayapi/date/2025-05-09").Result;
+            // 获取当前时间并减去一天，然后格式化为 "yyyy-MM-dd" 字符串
+            var url = $"http://43.142.139.247/api/dayapi/date/{DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")}";
+            var response = client.GetStringAsync(url).Result;
             var jsonData = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(response);
             int size = 20; // 每份的个数，可根据需要调整
             int part = 0; // 当前分片的索引
@@ -97,7 +99,7 @@ public class FiveAlgorithm : QCAlgorithm
             var partItems = gupiao.Skip(part * size).Take(size).ToList();
             var singlePartItems = jsonData.Where(x => x.Name.ToString() == "星辉环材").ToList();
 
-            foreach (var item in singlePartItems)
+            foreach (var item in cl)
             {
                 var code = item.Code.ToString();
                 var name = item.Name.ToString();
