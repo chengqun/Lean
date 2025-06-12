@@ -86,7 +86,7 @@ public class LiveFiveAlgorithm : QCAlgorithm
             var jsonData = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(response);
 
             var cl = jsonData.Where(x => x.StrategyName.ToString() == "长上影试盘战法").ToList();
-            var singlePartItems = jsonData.Where(x => x.Name.ToString() == "星辉环材").ToList();
+            var singlePartItems = jsonData.Where(x => x.Name.ToString() == "派林生物").ToList();
             foreach (var item in singlePartItems)
             {
                 var code = item.Code.ToString();

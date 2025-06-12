@@ -65,7 +65,6 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                                                 $"|日量比: {analysis.DayVolumeRatio:F4}" +
                                                 $"|日量比3: {analysis.DayVolumeRatio3:F4}" +
                                                 // macd
-                                                // $"|日ATR: {analysis.DayAtr:F4}" +
                                                 $"|日MACD: {analysis.DayMacd.Histogram * 2:F2}" +
                                                 $"|日DIFF: {analysis.DayMacd:F2}" +
                                                 $"|日DEA: {analysis.DayMacd.Signal:F2}" +
@@ -131,6 +130,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             DayMacdTrend = Math.Round(analysis.DayMacdTrend, 2), // 日MACD趋势
                             // 开盘信息
                             OpenReturn = Math.Round(analysis.OpenReturn, 4), // 今日开盘涨幅
+                            PreviousOpenReturn1 = Math.Round(analysis.PreviousOpenReturn1, 4), // 昨日开盘涨幅
+                            PreviousOpenReturn2 = Math.Round(analysis.PreviousOpenReturn2, 4), // 昨日开盘涨幅
                             // 分钟K线信息
                             // 价格
                             MinuteKLineReturn = Math.Round(analysis.MinuteKLineReturn, 4), // 分钟K线收益率

@@ -132,7 +132,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public decimal DayMacdTrend { get; set; } // 日MACD趋势，这是X值，表示日MACD的趋势
         // 开盘信息
         public decimal OpenReturn { get; set; } // 今日开盘涨幅，这是X值，表示今日开盘涨幅
-
+        public decimal PreviousOpenReturn1 { get; set; } // 昨日开盘涨幅，这是X值，表示昨日开盘涨幅
+        public decimal PreviousOpenReturn2 { get; set; } // 昨日开盘涨幅，这是X值，表示昨日开盘涨幅
         // 分钟X 特征
         // 价格
         public decimal MinuteKLineReturn { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
