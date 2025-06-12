@@ -283,10 +283,7 @@ public class FiveAnalysis
 
             // 9点35下跌，9点40底部盘整，9点45弱转强，定义一个变量名字叫弱转强
             MinuteWeakToStrong = 
-              previousMinuteKLineReturn2<-0.02m  // 9点35 下跌
-              && previousRsiValue1 < 15m // 9点40 底部盘整
-              && rsiValue > 10m && MinuteKLineReturn>0.02m
-              && MinutePriceBreakoutEma ==true 
+              MinutePriceBreakoutEma ==true 
               && MinutePriceBreakout==true// 9点45 弱转强
             ;
 

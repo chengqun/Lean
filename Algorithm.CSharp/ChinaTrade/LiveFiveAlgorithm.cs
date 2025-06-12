@@ -13,11 +13,6 @@
  * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using Microsoft.ML;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
@@ -25,9 +20,16 @@ using QuantConnect.Algorithm.CSharp.ChinaTrade.Orders;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Risk;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies;
+using QuantConnect.Api;
 using QuantConnect.Data;
 using QuantConnect.Indicators;
 using QuantConnect.Orders;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Xml.Linq;
 using static QuantConnect.Algorithm.CSharp.ChinaTrade.MLnet.SampleRegression;
 
 namespace QuantConnect.Algorithm.CSharp.ChinaTrade;
@@ -81,19 +83,22 @@ public class LiveFiveAlgorithm : QCAlgorithm
         using (var client = new HttpClient())
         {
             // 获取当前时间并减去一天，然后格式化为 "yyyy-MM-dd" 字符串
-            var url = $"http://43.142.139.247/api/dayapi/date/{DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")}";
+            var url = $"http://ai.10jqka.com.cn/transfer/index/index?app=19";
             var response = client.GetStringAsync(url).Result;
-            var jsonData = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(response);
-
-            var cl = jsonData.Where(x => x.StrategyName.ToString() == "长上影试盘战法").ToList();
-            var singlePartItems = jsonData.Where(x => x.Name.ToString() == "派林生物").ToList();
-            foreach (var item in singlePartItems)
+            // 示例代码片段，放在InitializeData方法中合适位置：
+            var jsonData = Newtonsoft.Json.JsonConvert.DeserializeObject<RootObject>(response);
+            foreach (var strategy in jsonData.data)
             {
-                var code = item.Code.ToString();
-                var name = item.Name.ToString();
-                var industry = item.Industry.ToString();
-                var analysis = new FiveAnalysis(this, code, name, industry);
-                _macdAnalysis.Add(analysis.Symbol, analysis);
+                var strategyName = strategy.strategy_name;
+                foreach (var stock in strategy.stock_info)
+                {
+                    
+                    var stockCode = GetMarketPrefix(stock.stock_code);
+                    var stockName = stock.stock_name;
+                    // 这里可以根据需要处理数据
+                    var analysis = new FiveAnalysis(this, stockCode, stockName, strategyName);
+                    _macdAnalysis.Add(analysis.Symbol, analysis);
+                }
             }
         }
     }
@@ -113,5 +118,21 @@ public class LiveFiveAlgorithm : QCAlgorithm
         var risks = _riskManager.CheckRisks(Portfolio);
         // // 执行订单
         _orderExecutor.ExecuteSignals(signals, risks).Wait();
+    }
+    // 判断股票代码前缀，返回市场标识
+    private string GetMarketPrefix(string stockCode)
+    {
+        if (stockCode.StartsWith("6"))
+        {
+            return "SH."+stockCode;
+        }
+        else if (stockCode.StartsWith("0") || stockCode.StartsWith("3"))
+        {
+            return "SZ."+stockCode;
+        }
+        else
+        {
+            return string.Empty;
+        }
     }
 }
