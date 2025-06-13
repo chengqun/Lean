@@ -20,6 +20,7 @@ public class FiveAnalysis
     public IndicatorBase<IndicatorDataPoint> BenchmarkClose { get; private set; }
     // 日线
     public MovingAverageConvergenceDivergence DayMacd { get; private set; }
+    public AverageTrueRange DayATR { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayNext2Close { get; private set; }  
     public IndicatorBase<IndicatorDataPoint> NextOpen { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayClose { get; private set; }
@@ -102,6 +103,7 @@ public class FiveAnalysis
         BenchmarkClose.Updated += (sender, updated) => UpdateMinuteStatus();
         // 日线指标更新事件
         DayMacd.Updated += (sender, updated) => UpdateMinuteStatus();
+        DayATR.Updated += (sender, updated) => UpdateMinuteStatus();
         DayNext2Close.Updated += (sender, updated) => UpdateMinuteStatus();
         NextOpen.Updated += (sender, updated) => UpdateMinuteStatus();
         DayClose.Updated += (sender, updated) => UpdateMinuteStatus();
@@ -283,10 +285,7 @@ public class FiveAnalysis
 
             // 9点35下跌，9点40底部盘整，9点45弱转强，定义一个变量名字叫弱转强
             MinuteWeakToStrong = 
-              previousMinuteKLineReturn2<-0.02m  // 9点35 下跌
-              && previousRsiValue1 < 15m // 9点40 底部盘整
-              && rsiValue > 10m && MinuteKLineReturn>0.02m
-              && MinutePriceBreakoutEma ==true 
+              MinutePriceBreakoutEma ==true 
               && MinutePriceBreakout==true// 9点45 弱转强
             ;
 
@@ -341,7 +340,7 @@ public class FiveAnalysis
         var daysymbol = _algo.AddData<ApiDayCustomData>(code, Resolution.Daily, TimeZones.Utc).Symbol;
         DayMacd = _algo.MACD(daysymbol, 12, 26, 9, MovingAverageType.Exponential);
         // 由于需要将 ApiDayCustomData 转换为 IBaseDataBar，我们手动提供所需的价格数据
-
+        DayATR = _algo.ATR(daysymbol, 14, MovingAverageType.Simple);
         DayNext2Close = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Next2Close));
         NextOpen = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).NextOpen));
         DayClose = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
@@ -411,6 +410,7 @@ public class FiveAnalysis
             DayMacd.Update(bar.EndTime, bar.Close);
             if (bar is ApiDayCustomData customData)
             {
+                DayATR.Update(customData);
                 DayVolume.Update(bar.EndTime, customData.Volume);
                 DayNext2Close.Update(bar.EndTime, customData.Next2Close);
                 DayClose.Update(bar.EndTime, customData.Close);
