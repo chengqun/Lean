@@ -125,7 +125,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             DayVolumeRatio3 = Math.Round(analysis.DayVolumeRatio3, 4), // 日量比3
                             // macd
                             DayMacd = Math.Round(analysis.DayMacd.Histogram * 2, 2), // 日MACD
-                            DayATR = Math.Round(analysis.DayATR,2),
+                            // DayATR = Math.Round(analysis.DayATR,2),
                             DayDIFF = Math.Round(analysis.DayMacd, 2), // 日MACD柱状图
                             DayDEA = Math.Round(analysis.DayMacd.Signal, 2), // 日MACD信号线
                             DayMacdTrend = Math.Round(analysis.DayMacdTrend, 2), // 日MACD趋势
