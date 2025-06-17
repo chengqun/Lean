@@ -22,6 +22,7 @@ public class FiveAnalysis
     public MovingAverageConvergenceDivergence DayMacd { get; private set; }
     // public AverageTrueRange DayATR { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayNext2Close { get; private set; }  
+    public IndicatorBase<IndicatorDataPoint> DayNext5Close { get; private set; }  
     public IndicatorBase<IndicatorDataPoint> NextOpen { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayClose { get; private set; }
     public IndicatorBase<IndicatorDataPoint> DayVolume { get; private set; }
@@ -87,6 +88,7 @@ public class FiveAnalysis
     public decimal Score { get; private set; }
     // 定义Y
     public decimal MinuteNextDayReturn { get; private set; }
+    public decimal MinuteNext5DayReturn {get; private set; }
     public List<TradingSignal> TradeHistory { get; } = new List<TradingSignal>();
     public TradingSignal LastTrade => TradeHistory.Count > 0 ? TradeHistory.Last() : null;
     public TradingSignal LastBuy => TradeHistory.LastOrDefault(r => r.Direction == OrderDirection.Buy);
@@ -106,6 +108,7 @@ public class FiveAnalysis
         DayMacd.Updated += (sender, updated) => UpdateMinuteStatus();
         // DayATR.Updated += (sender, updated) => UpdateMinuteStatus();
         DayNext2Close.Updated += (sender, updated) => UpdateMinuteStatus();
+        DayNext5Close.Updated += (sender, updated) => UpdateMinuteStatus();
         NextOpen.Updated += (sender, updated) => UpdateMinuteStatus();
         DayClose.Updated += (sender, updated) => UpdateMinuteStatus();
         DayVolume.Updated += (sender, updated) => UpdateMinuteStatus();
@@ -128,6 +131,7 @@ public class FiveAnalysis
         {
             // 获取日线数据
             var nextDayClose = DayNext2Close.Current?.Value ?? 0;
+            var nextDayClose5 = DayNext5Close.Current?.Value ?? 0;
             var nextDayOpen = NextOpen.Current?.Value ?? 0;
             var previousNextDayOpen1= NextOpen.Samples > 1 ? NextOpen[1]?.Value ?? 0 : 0;
             var previousNextDayOpen2 = NextOpen.Samples > 2? NextOpen[2]?.Value?? 0 : 0;
@@ -317,6 +321,7 @@ public class FiveAnalysis
             }
             // 定义Y
             MinuteNextDayReturn = closePrice != 0 ? (nextDayClose / closePrice - 1) : 0;
+            MinuteNext5DayReturn = closePrice != 0 ? (nextDayClose5 / closePrice - 1) : 0;
         }
         catch (Exception ex)
         {
@@ -344,6 +349,7 @@ public class FiveAnalysis
         // 由于需要将 ApiDayCustomData 转换为 IBaseDataBar，我们手动提供所需的价格数据
         // DayATR = _algo.ATR(daysymbol, 14, MovingAverageType.Simple);
         DayNext2Close = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Next2Close));
+        DayNext5Close = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Next5Close));
         NextOpen = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).NextOpen));
         DayClose = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Close));
         DayVolume = _algo.Identity(daysymbol, Resolution.Daily, (Func<dynamic, decimal>)(x => ((ApiDayCustomData)x).Volume));
@@ -415,6 +421,7 @@ public class FiveAnalysis
                 // DayATR.Update(customData);
                 DayVolume.Update(bar.EndTime, customData.Volume);
                 DayNext2Close.Update(bar.EndTime, customData.Next2Close);
+                DayNext5Close.Update(bar.EndTime, customData.Next5Close);
                 DayClose.Update(bar.EndTime, customData.Close);
                 NextOpen.Update(bar.EndTime, customData.NextOpen);
                 DayStrategyName.Update(bar.EndTime, ConvertStringToDecimal(customData.StrategyName));

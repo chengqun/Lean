@@ -109,6 +109,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                         {
                             // Y特征
                             Lable = Math.Round(analysis.MinuteNextDayReturn, 4), // 第二天的收益率
+                            Lable5 = Math.Round(analysis.MinuteNext5DayReturn, 4), // 第5天的收益率
                             Score = predictionResult.Score,
                             // 基本信息
                             Date = time.ToString("yyyy-MM-dd HH:mm:ss"), // 将 DateTime 转换为字符串并使用正确的 forma

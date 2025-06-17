@@ -43,6 +43,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
 
         [JsonProperty("Next2Close")]
         public decimal Next2Close { get; set; }  
+
+        [JsonProperty("Next5Close")]
+        public decimal Next5Close { get; set; }  
         public override DateTime EndTime { get; set; }
         public override SubscriptionDataSource GetSource(
             SubscriptionDataConfig config,
@@ -103,7 +106,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Models
                     NextOpen = string.IsNullOrEmpty(csv[8]) ? 0 : Math.Round(Convert.ToDecimal(csv[8]), 2),
                     NextClose = string.IsNullOrEmpty(csv[9]) ? 0 : Math.Round(Convert.ToDecimal(csv[9]), 2),
                     Next2Open = string.IsNullOrEmpty(csv[10]) ? 0 : Math.Round(Convert.ToDecimal(csv[10]), 2),
-                    Next2Close = string.IsNullOrEmpty(csv[11]) ? 0 : Math.Round(Convert.ToDecimal(csv[11]), 2)
+                    Next2Close = string.IsNullOrEmpty(csv[11]) ? 0 : Math.Round(Convert.ToDecimal(csv[11]), 2),
+                    Next5Close = string.IsNullOrEmpty(csv[12]) ? 0 : Math.Round(Convert.ToDecimal(csv[12]), 2)
                 };
                 var a = DateTime.ParseExact(data.Date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
                 var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(config.ExchangeTimeZone.Id);
