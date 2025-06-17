@@ -99,7 +99,7 @@ public class FiveAlgorithm : QCAlgorithm
                 var partText = System.IO.File.ReadAllText(partFilePath).Trim();
                 int.TryParse(partText, out part);
             }
-            var partItems = zhishu.Skip(part * size).Take(size).ToList();
+            var partItems = jsonData.Skip(part * size).Take(size).ToList();
             foreach (var item in partItems)
             {
                 var code = item.Code.ToString();
