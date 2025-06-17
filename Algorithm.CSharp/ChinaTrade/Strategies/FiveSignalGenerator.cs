@@ -136,6 +136,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 分钟K线信息
                             // 价格
                             MinuteKLineReturn = Math.Round(analysis.MinuteKLineReturn, 4), // 分钟K线收益率
+                            MinuteKLineReturn5day = Math.Round(analysis.MinuteKLineReturn5day, 4), // 分钟K线收益率
                             PreviousMinuteKLineReturn1 = Math.Round(analysis.PreviousMinuteKLineReturn1, 4), // 分钟K线收益率
                             PreviousMinuteKLineReturn2 = Math.Round(analysis.PreviousMinuteKLineReturn2, 4), // 分钟K线收益率
                             PreviousMinuteKLineReturn3 = Math.Round(analysis.PreviousMinuteKLineReturn3, 4), // 分钟K线收益率

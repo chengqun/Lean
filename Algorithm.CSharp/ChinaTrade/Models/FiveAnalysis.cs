@@ -60,6 +60,7 @@ public class FiveAnalysis
     // 分钟线指标
     // 分钟K线收益率
     public decimal MinuteKLineReturn { get; private set; }
+    public decimal MinuteKLineReturn5day {get;private set;}
     public decimal PreviousMinuteKLineReturn1 {get;private set;}
     public decimal PreviousMinuteKLineReturn2 {get;private set;}
     public decimal PreviousMinuteKLineReturn3 {get;private set;}
@@ -218,6 +219,7 @@ public class FiveAnalysis
             MinutePriceBreakout = closePrice > maxPreviousClosePrice && previousClosePrice1 <= maxPreviousClosePrice;
 
             MinuteKLineReturn = previousClosePrice1 != 0 ? (closePrice / previousClosePrice1 - 1) : 0;
+            MinuteKLineReturn5day = previousDayClose5 != 0 ? (closePrice / previousDayClose5 - 1) : 0;
             var previousMinuteKLineReturn1 = previousClosePrice1!= 0? (previousClosePrice1 / previousClosePrice2 - 1) : 0;
             var previousMinuteKLineReturn2 = previousClosePrice2!= 0? (previousClosePrice2 / previousClosePrice3 - 1) : 0;
             var previousMinuteKLineReturn3 = previousClosePrice3!= 0? (previousClosePrice3 / previousClosePrice4 - 1) : 0;

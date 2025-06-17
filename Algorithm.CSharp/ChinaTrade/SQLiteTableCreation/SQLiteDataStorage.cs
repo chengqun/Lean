@@ -138,6 +138,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         // 分钟X 特征
         // 价格
         public decimal MinuteKLineReturn { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
+        public decimal MinuteKLineReturn5day {get;set;} 
         public decimal PreviousMinuteKLineReturn1 { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
         public decimal PreviousMinuteKLineReturn2 { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
         public decimal PreviousMinuteKLineReturn3 { get; set; } // 分钟K线收益率，这是X值，表示分钟K线的收益率
