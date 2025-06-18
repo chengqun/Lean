@@ -87,19 +87,34 @@ public class LiveHttpFiveAlgorithm : QCAlgorithm
             var response = client.GetStringAsync(url).Result;
             // 示例代码片段，放在InitializeData方法中合适位置：
             var jsonData = Newtonsoft.Json.JsonConvert.DeserializeObject<RootObject>(response);
+            var items = new List<LiveStock>();
             foreach (var strategy in jsonData.data)
             {
                 var strategyName = strategy.strategy_name;
+                // 将 20250618 格式的日期转换为 2025-06-18 格式
+                var dateString = strategy.stockpicking_date;
+                var formattedDate = $"{dateString.Substring(0,4)}-{dateString.Substring(4,2)}-{dateString.Substring(6, 2)}";
+                var date = formattedDate;
                 foreach (var stock in strategy.stock_info)
                 {
-                    
                     var stockCode = GetMarketPrefix(stock.stock_code);
                     var stockName = stock.stock_name;
-                    // 这里可以根据需要处理数据
-                    var analysis = new FiveAnalysis(this, stockCode, stockName, strategyName);
-                    _macdAnalysis.Add(analysis.Symbol, analysis);
+                    // // 这里可以根据需要处理数据
+                    // var analysis = new FiveAnalysis(this, stockCode, stockName, "");
+                    // _macdAnalysis.Add(analysis.Symbol, analysis);
+                    var a = new LiveStock
+                    {
+                        Code = stockCode,
+                        Name = stockName,
+                        StrategyName = strategyName,
+                        Date = date
+                    };
+                    items.Add(a);
                 }
             }
+            var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectBase.db3");
+            var db = new SQLiteDataStorage<LiveStock>(DatabasePath);
+            db.SaveItemsAsync(items).Wait();
         }
     }
 

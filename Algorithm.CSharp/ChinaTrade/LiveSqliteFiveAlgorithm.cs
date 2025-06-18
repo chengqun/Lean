@@ -87,7 +87,7 @@ public class LiveSqliteFiveAlgorithm : QCAlgorithm
         {
             var code = item.Code.ToString();
             var name = item.Name.ToString();
-            var industry = item.Industry.ToString();
+            var industry = "";//item.Industry.ToString();
             var analysis = new FiveAnalysis(this, code, name, industry);
             _macdAnalysis.Add(analysis.Symbol, analysis);
         }
