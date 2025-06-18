@@ -108,7 +108,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                         var item = new RealDataItem
                         {
                             // Y特征
-                            Lable = Math.Round(analysis.MinuteNextDayReturn, 4), // 第二天的收益率
+                            Lable1 = Math.Round(analysis.MinuteDayReturn, 4), // 第二天的收益率
+                            Lable2 = Math.Round(analysis.MinuteNextDayReturn, 4), // 第2天的收益率
                             Lable5 = Math.Round(analysis.MinuteNext5DayReturn, 4), // 第5天的收益率
                             Score = predictionResult.Score,
                             // 基本信息

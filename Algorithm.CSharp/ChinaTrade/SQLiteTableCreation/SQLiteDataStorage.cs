@@ -126,7 +126,8 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
         // Y 特征
-        public decimal Lable { get; set; } // 这是Y值，表示第二天的收益率
+        public decimal Lable1 { get; set; } // 这是Y值，表示当日浮盈
+        public decimal Lable2 { get; set; } // 这是Y值，表示第二天的收益率
         public decimal Lable5 { get; set; } // 这是Y值，表示第5天的收益率
         public float Score { get; set; }
         // 基本信息
