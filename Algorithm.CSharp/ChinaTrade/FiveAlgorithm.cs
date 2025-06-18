@@ -81,33 +81,25 @@ public class FiveAlgorithm : QCAlgorithm
 
     private void InitializeData()
     {
-        using (var client = new HttpClient())
+        int size = 20; // 每份的个数，可根据需要调整
+        int part = 0; // 当前分片的索引
+        var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectBase.db3");
+        var db = new SQLiteDataStorage<BacktestStock>(DatabasePath);
+        var gupiao = db.GetItemsAsync().Result;
+        var partFilePath = System.IO.Path.Combine(Globals.DataFolder, "AAshares", "part.txt");
+        if (System.IO.File.Exists(partFilePath))
         {
-            // 获取当前时间并减去一天，然后格式化为 "yyyy-MM-dd" 字符串
-            var url = $"http://43.142.139.247/api/dayapi/date/{DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")}";
-            var response = client.GetStringAsync(url).Result;
-            var jsonData = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(response);
-            int size = 20; // 每份的个数，可根据需要调整
-            int part = 0; // 当前分片的索引
-            // 按照Industry是否为"未知"分成两部分
-            var gupiao = jsonData.Where(x => x.Industry.ToString() != "未知").ToList();
-            var zhishu = jsonData.Where(x => x.Industry.ToString() == "未知").ToList(); // 这是指数                                                                      
-            // 从文件中读取分片索引
-            var partFilePath = System.IO.Path.Combine(Globals.DataFolder, "AAshares", "part.txt");
-            if (System.IO.File.Exists(partFilePath))
-            {
-                var partText = System.IO.File.ReadAllText(partFilePath).Trim();
-                int.TryParse(partText, out part);
-            }
-            var partItems = gupiao.Skip(part * size).Take(size).ToList();
-            foreach (var item in partItems)
-            {
-                var code = item.Code.ToString();
-                var name = item.Name.ToString();
-                var industry = item.Industry.ToString();
-                var analysis = new FiveAnalysis(this, code, name, industry);
-                _macdAnalysis.Add(analysis.Symbol, analysis);
-            }
+            var partText = System.IO.File.ReadAllText(partFilePath).Trim();
+            int.TryParse(partText, out part);
+        }
+        var partItems = gupiao.Skip(part * size).Take(size).ToList();
+        foreach (var item in partItems)
+        {
+            var code = item.Code.ToString();
+            var name = item.Name.ToString();
+            var industry = item.Industry.ToString();
+            var analysis = new FiveAnalysis(this, code, name, industry);
+            _macdAnalysis.Add(analysis.Symbol, analysis);
         }
     }
 
@@ -115,7 +107,8 @@ public class FiveAlgorithm : QCAlgorithm
     public override void OnEndOfAlgorithm()
     {
         // 这里可以使用 SQLiteDataStorage 类来进行批量写入
-        var db = new SQLiteDataStorage<RealDataItem>();
+        var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectData.db3");
+        var db = new SQLiteDataStorage<RealDataItem>(DatabasePath);
         db.SaveItemsAsync(GlobalRealDataItemList.Items).Wait();
     }
     public override async void OnData(Slice data)

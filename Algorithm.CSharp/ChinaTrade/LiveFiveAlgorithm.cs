@@ -107,7 +107,8 @@ public class LiveFiveAlgorithm : QCAlgorithm
     public override void OnEndOfAlgorithm()
     {
         // 这里可以使用 SQLiteDataStorage 类来进行批量写入
-        var db = new SQLiteDataStorage<RealDataItem>();
+        var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectBase.db3");
+        var db = new SQLiteDataStorage<RealDataItem>(DatabasePath);
         db.SaveItemsAsync(GlobalRealDataItemList.Items).Wait();
     }
     public override async void OnData(Slice data)

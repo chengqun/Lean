@@ -10,14 +10,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
     // 定义常量类，用于存储数据库相关的常量
     public static class Constants
     {
-        public const string DatabaseFilename = "QuantConnectData.db3";
-
         public const SQLiteOpenFlags Flags =
             SQLiteOpenFlags.ReadWrite |
             SQLiteOpenFlags.Create |
             SQLiteOpenFlags.SharedCache;
-
-        public static string DatabasePath => Path.Combine(Globals.DataFolder, "AAshares", DatabaseFilename);
     }
 
     // 定义一个泛型类，用于处理 SQLite 数据库的存储操作
@@ -25,9 +21,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
     {
         private readonly SQLiteAsyncConnection database;
 
-        public SQLiteDataStorage()
+        public SQLiteDataStorage(string DatabasePath)
         {
-            database = new SQLiteAsyncConnection(Constants.DatabasePath, Constants.Flags);
+            database = new SQLiteAsyncConnection(DatabasePath, Constants.Flags);
             _ = InitializeDatabaseAsync();
         }
 
@@ -101,7 +97,27 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
             return await database.DeleteAsync(item);
         }
     }
-
+    
+    [Table("BacktestData")]
+    public class BacktestStock
+    {
+                // 添加自增主键
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public string Industry { get; set; }
+    }
+    [Table("BacktestData")]
+    public class LiveStock
+    {
+                // 添加自增主键
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public string Industry { get; set; }
+    }
 
     [Table("RealDataItem")]
     public class RealDataItem
