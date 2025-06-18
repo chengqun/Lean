@@ -13,11 +13,6 @@
  * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using Microsoft.ML;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
@@ -25,17 +20,21 @@ using QuantConnect.Algorithm.CSharp.ChinaTrade.Orders;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Risk;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation;
 using QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies;
+using QuantConnect.Api;
 using QuantConnect.Data;
 using QuantConnect.Indicators;
 using QuantConnect.Orders;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Xml.Linq;
 using static QuantConnect.Algorithm.CSharp.ChinaTrade.MLnet.SampleRegression;
 
 namespace QuantConnect.Algorithm.CSharp.ChinaTrade;
 
-/// <summary>
-/// 5分钟算法,backtest代码
-/// </summary>
-public class FiveAlgorithm : QCAlgorithm
+public class LiveSqliteFiveAlgorithm : QCAlgorithm
 {
     private ISignalGenerator _signalGenerator;
     private IRiskManager _riskManager;
@@ -81,19 +80,10 @@ public class FiveAlgorithm : QCAlgorithm
 
     private void InitializeData()
     {
-        int size = 20; // 每份的个数，可根据需要调整
-        int part = 0; // 当前分片的索引
         var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectBase.db3");
-        var table1 = new SQLiteDataStorage<BacktestStock>(DatabasePath);
+        var table1 = new SQLiteDataStorage<LiveStock>(DatabasePath);
         var gupiao = table1.GetItemsAsync().Result;
-        var partFilePath = System.IO.Path.Combine(Globals.DataFolder, "AAshares", "part.txt");
-        if (System.IO.File.Exists(partFilePath))
-        {
-            var partText = System.IO.File.ReadAllText(partFilePath).Trim();
-            int.TryParse(partText, out part);
-        }
-        var partItems = gupiao.Skip(part * size).Take(size).ToList();
-        foreach (var item in partItems)
+        foreach (var item in gupiao)
         {
             var code = item.Code.ToString();
             var name = item.Name.ToString();
@@ -119,5 +109,21 @@ public class FiveAlgorithm : QCAlgorithm
         var risks = _riskManager.CheckRisks(Portfolio);
         // // 执行订单
         _orderExecutor.ExecuteSignals(signals, risks).Wait();
+    }
+    // 判断股票代码前缀，返回市场标识
+    private string GetMarketPrefix(string stockCode)
+    {
+        if (stockCode.StartsWith("6"))
+        {
+            return "SH."+stockCode;
+        }
+        else if (stockCode.StartsWith("0") || stockCode.StartsWith("3"))
+        {
+            return "SZ."+stockCode;
+        }
+        else
+        {
+            return string.Empty;
+        }
     }
 }

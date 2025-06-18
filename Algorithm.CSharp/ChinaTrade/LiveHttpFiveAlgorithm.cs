@@ -34,7 +34,7 @@ using static QuantConnect.Algorithm.CSharp.ChinaTrade.MLnet.SampleRegression;
 
 namespace QuantConnect.Algorithm.CSharp.ChinaTrade;
 
-public class LiveFiveAlgorithm : QCAlgorithm
+public class LiveHttpFiveAlgorithm : QCAlgorithm
 {
     private ISignalGenerator _signalGenerator;
     private IRiskManager _riskManager;
@@ -107,7 +107,7 @@ public class LiveFiveAlgorithm : QCAlgorithm
     public override void OnEndOfAlgorithm()
     {
         // 这里可以使用 SQLiteDataStorage 类来进行批量写入
-        var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectBase.db3");
+        var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectData.db3");
         var db = new SQLiteDataStorage<RealDataItem>(DatabasePath);
         db.SaveItemsAsync(GlobalRealDataItemList.Items).Wait();
     }
