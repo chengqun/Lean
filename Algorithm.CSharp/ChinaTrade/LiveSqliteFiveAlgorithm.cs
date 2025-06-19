@@ -110,20 +110,4 @@ public class LiveSqliteFiveAlgorithm : QCAlgorithm
         // // 执行订单
         _orderExecutor.ExecuteSignals(signals, risks).Wait();
     }
-    // 判断股票代码前缀，返回市场标识
-    private string GetMarketPrefix(string stockCode)
-    {
-        if (stockCode.StartsWith("6"))
-        {
-            return "SH."+stockCode;
-        }
-        else if (stockCode.StartsWith("0") || stockCode.StartsWith("3"))
-        {
-            return "SZ."+stockCode;
-        }
-        else
-        {
-            return string.Empty;
-        }
-    }
 }

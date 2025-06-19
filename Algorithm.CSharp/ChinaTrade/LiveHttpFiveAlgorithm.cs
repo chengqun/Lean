@@ -99,22 +99,11 @@ public class LiveHttpFiveAlgorithm : QCAlgorithm
                 {
                     var stockCode = GetMarketPrefix(stock.stock_code);
                     var stockName = stock.stock_name;
-                    // // 这里可以根据需要处理数据
-                    // var analysis = new FiveAnalysis(this, stockCode, stockName, "");
-                    // _macdAnalysis.Add(analysis.Symbol, analysis);
-                    var a = new LiveStock
-                    {
-                        Code = stockCode,
-                        Name = stockName,
-                        StrategyName = strategyName,
-                        Date = date
-                    };
-                    items.Add(a);
+                    // 这里可以根据需要处理数据
+                    var analysis = new FiveAnalysis(this, stockCode, stockName, "");
+                    _macdAnalysis.Add(analysis.Symbol, analysis);
                 }
             }
-            var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectBase.db3");
-            var db = new SQLiteDataStorage<LiveStock>(DatabasePath);
-            db.SaveItemsAsync(items).Wait();
         }
     }
 
