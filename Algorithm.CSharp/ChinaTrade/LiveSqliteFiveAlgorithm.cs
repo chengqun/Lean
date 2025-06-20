@@ -81,7 +81,7 @@ public class LiveSqliteFiveAlgorithm : QCAlgorithm
     private void InitializeData()
     {
         var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectBase.db3");
-        var table1 = new SQLiteDataStorage<LiveStock>(DatabasePath);
+        var table1 = new SQLiteDataStorage<StrategyStock>(DatabasePath);
         var gupiao = table1.GetItemsAsync().Result;
         foreach (var item in gupiao)
         {

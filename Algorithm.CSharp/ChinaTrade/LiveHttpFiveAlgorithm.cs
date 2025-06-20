@@ -87,7 +87,7 @@ public class LiveHttpFiveAlgorithm : QCAlgorithm
             var response = client.GetStringAsync(url).Result;
             // 示例代码片段，放在InitializeData方法中合适位置：
             var jsonData = Newtonsoft.Json.JsonConvert.DeserializeObject<RootObject>(response);
-            var items = new List<LiveStock>();
+            var items = new List<StrategyStock>();
             foreach (var strategy in jsonData.data)
             {
                 var strategyName = strategy.strategy_name;
