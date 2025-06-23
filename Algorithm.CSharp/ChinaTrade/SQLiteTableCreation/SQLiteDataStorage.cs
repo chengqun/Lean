@@ -119,6 +119,17 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public string Name { get; set; }
         public string StrategyName { get; set; }
     }
+    [Table("LiveData")]
+    public class LiveStock
+    {
+                // 添加自增主键
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
+        public string Date { get; set; }
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public string StrategyName { get; set; }
+    }
 
     [Table("RealDataItem")]
     public class RealDataItem
