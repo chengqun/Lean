@@ -54,6 +54,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                                                 // 基本信息
                                                 $"|时间: {time}" +
                                                 $"|名称:{analysis.Name}" +
+                                                $"|代码:{analysis.Symbol.Value}" +
                                                 $"|行业{analysis.Industry}" +
                                                 $"|price: {closePrice:F4}" +
                                                 // 指数信息
@@ -115,6 +116,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 基本信息
                             Date = time.ToString("yyyy-MM-dd HH:mm:ss"), // 将 DateTime 转换为字符串并使用正确的 forma
                             Name = analysis.Name,                        // 存储股票名称
+                            Code = analysis.Symbol.Value,                // 存储股票代码
                             Industry = analysis.Industry,                // 存储股票所属行业
                             Price = Math.Round(closePrice, 4),          // 当前价格
                             // 指数信息
