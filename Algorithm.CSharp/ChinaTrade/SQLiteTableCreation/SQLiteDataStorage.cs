@@ -131,7 +131,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         public string StrategyName { get; set; }
     }
 
-    [Table("RealDataItem")]
+    [Table("5min_kline_features")]
     public class RealDataItem
     {
         // 添加自增主键
