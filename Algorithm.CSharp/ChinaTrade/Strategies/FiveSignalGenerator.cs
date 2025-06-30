@@ -122,7 +122,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                             // 指数信息
                             BenchmarkKLineReturn = Math.Round(analysis.BenchmarkKLineReturn, 4), // 基准指数收益率
                             // 日信息
-                            DayStrategyName = analysis.DayStrategyName, // 日策略名称
+                            DayStrategyName = ConvertNumberToString((int)analysis.DayStrategyName), // 日策略名称
                             DayKLineReturn = Math.Round(analysis.DayKLineReturn, 4), // 日K线收益率
                             DayKLineReturn5 = Math.Round(analysis.DayKLineReturn5, 4), // 日K线收益率5
                             DayVolumeRatio = Math.Round(analysis.DayVolumeRatio, 4), // 日量比
@@ -181,6 +181,25 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
             }
 
             return signals;
+        }
+
+        private string ConvertNumberToString(int dayStrategyName)
+        {
+                // 根据不同的数字返回不同的字符串
+                // 例如，1 返回 "长上影试盘战法"，2 返回 "潜龙出水，温和放量"，以此类推
+                switch (dayStrategyName)
+                {
+                    case 1:
+                        return "长上影试盘战法";
+                    case 2:
+                        return "潜龙出水，温和放量";
+                    case 3:
+                        return "上升通道修整";
+                    case 4:
+                        return "BOLL突破，均线共振";
+                    default:
+                        return dayStrategyName.ToString(); // 转换失败或未匹配到特定数字时返回数字字符串
+                }
         }
     }
 }

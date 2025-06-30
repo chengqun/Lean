@@ -152,7 +152,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.SQLiteTableCreation
         // 指数信息
         public decimal BenchmarkKLineReturn { get; set; } // 指数收益率，这是X值，表示指数的收益率
         // 日线X 特征
-        public decimal DayStrategyName { get; set; } // 日策略名称，这是X值，表示日策略的名称
+        public string DayStrategyName { get; set; } // 日策略名称，这是X值，表示日策略的名称
         public decimal DayKLineReturn { get; set; } // 日K线收益率，这是X值，表示日K线的收益率
         public decimal DayKLineReturn5 { get; set; } // 日K线收益率，这是X值，表示日K线的收益率
         public decimal DayVolumeRatio { get; set; } // 日量比，这是X值，表示日的量比
