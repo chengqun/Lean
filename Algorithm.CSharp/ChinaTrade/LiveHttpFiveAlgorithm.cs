@@ -51,7 +51,7 @@ public class LiveHttpFiveAlgorithm : QCAlgorithm
         // // 初始化CNY现金账户（假设初始金额为10万）
         // SetCash("CNY", 10000000);
         // 初始化金额
-        SetCash(10000000);
+        SetCash(200000);
         SetTimeZone(TimeZones.Utc);
         // 设置手续费模型
         SetBrokerageModel(new AStockBrokerageModel());

@@ -300,19 +300,23 @@ public class FiveAnalysis
               && MinutePriceBreakout==true// 9点45 弱转强
             ;
 
+             
+
             TradingSignal = new TradingSignal()
             {
                 Symbol = Symbol,
                 Direction = OrderDirection.Hold,
-                Weight = 0.01m,
+                Weight = 0.1m,
                 //操作名称
                 OperationReson = "",
                 SuggestedPrice = MinuteClose,
-                SignalTime = MinuteClose.Current?.EndTime ?? DateTime.MinValue,
+                SignalTime = ConvertToChinaTime(MinuteClose.Current?.EndTime ?? DateTime.MinValue),
             };
             // 判断要买
             if (
-                MinuteWeakToStrong
+                //935 
+                ConvertToChinaTime(MinuteClose.Current?.EndTime ?? DateTime.MinValue) == _algo.Time.Date.AddHours(9).AddMinutes(35)
+                && MinutePriceBreakout == true
             )
             {
                 TradingSignal.Direction = OrderDirection.Buy;
@@ -335,6 +339,12 @@ public class FiveAnalysis
         }
     }
 
+    // 增加一个函数，UTC时间转换为中国时间
+    private DateTime ConvertToChinaTime(DateTime utcTime)
+    {
+        var chinaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time");
+        return TimeZoneInfo.ConvertTimeFromUtc(utcTime, chinaTimeZone);
+    }
     private void InitializeIndicators(string code)
     {
         Symbol = _algo.AddData<Api5MinCustomData>(code, Resolution.Minute, TimeZones.Utc).Symbol;

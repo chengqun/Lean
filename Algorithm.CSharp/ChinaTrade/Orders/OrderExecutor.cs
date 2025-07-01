@@ -104,26 +104,25 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
         // ...existing code...
         protected virtual void HandleBuy(TradingSignal signal, SecurityHolding holding, string logHeader)
         {
-            // 允许加仓：如果已持仓，则继续买入（加仓），否则新开仓
-            var targetWeight = signal.Weight > 0 ? signal.Weight : 0.01m; // 默认0.01
+            // 不允许加仓：仅在当前无持仓时才买入，否则忽略
+            var targetWeight = signal.Weight > 0 ? signal.Weight : 0.1m; // 默认0.1
             var targetPortfolioValue = _algo.Portfolio.TotalPortfolioValue * targetWeight;
             var price = holding.Price > 0 ? holding.Price : _algo.Securities[signal.Symbol].Price;
             if (price <= 0) price = 1; // 防止除零
             var targetQuantity = (int)(targetPortfolioValue / price / 100) * 100; // A股100股一手
-            var addQuantity = targetQuantity - holding.Quantity;
 
-            if (addQuantity > 0)
+            if (holding.Quantity == 0 && targetQuantity > 0)
             {
-                _algo.MarketOrder(signal.Symbol, addQuantity);
-                _algo.Debug($"{logHeader} ▶ 加仓{addQuantity}股（目标持仓:{targetQuantity}股）");
-                if(_algo.LiveMode)
+                _algo.MarketOrder(signal.Symbol, targetQuantity);
+                _algo.Debug($"{logHeader} ▶ 开仓{targetQuantity}股");
+                if (_algo.LiveMode)
                 {
-                    _connection?.InvokeAsync("SendOrder", signal.Direction.ToString(), signal.Symbol, price.ToString(), addQuantity.ToString());
+                    _connection?.InvokeAsync("SendOrder", signal.Direction.ToString(), signal.Symbol, price.ToString(), targetQuantity.ToString());
                 }
             }
             else
             {
-                _algo.Debug($"{logHeader} ⚠ 当前持仓已达目标或超出，忽略买入");
+                _algo.Debug($"{logHeader} ⚠ 已有持仓，忽略买入");
             }
         }
         // ...existing code...
