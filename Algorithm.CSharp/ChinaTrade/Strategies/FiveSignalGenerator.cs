@@ -197,7 +197,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Strategies
                         return "上升通道修整";
                     case 4:
                         return "BOLL突破，均线共振";
-                    default:
+                    case 5:
+                        return "回踩支撑，趋势向上";
+                default:
                         return dayStrategyName.ToString(); // 转换失败或未匹配到特定数字时返回数字字符串
                 }
         }

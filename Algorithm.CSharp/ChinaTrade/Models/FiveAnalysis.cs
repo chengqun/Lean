@@ -395,6 +395,8 @@ public class FiveAnalysis
                 return 3;
             case "BOLL突破，均线共振":
                 return 4;
+            case "回踩支撑，趋势向上":
+                return 5;
             default:
                 if (decimal.TryParse(input, out decimal result))
                 {
