@@ -91,7 +91,7 @@ public class LiveSqliteFiveAlgorithm : QCAlgorithm
             int.TryParse(partText, out part);
         }
         var partItems = gupiao.Skip(part * size).Take(size).ToList();
-        foreach (var item in gupiao)
+        foreach (var item in partItems)
         {
             var code = item.Code.ToString();
             var name = item.Name.ToString();
