@@ -10,7 +10,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Risk
     {
         private readonly QCAlgorithm _algorithm;
         private const decimal StopLossPercent = 0.02m;
-        private const decimal TakeProfitPercent = 0.04m;
+        private const decimal TakeProfitPercent = 0.1m;
 
         public RiskManager(QCAlgorithm algorithm)
         {
@@ -28,6 +28,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Risk
                 var profitRatio = holding.AveragePrice != 0
                     ? (currentPrice - holding.AveragePrice) / holding.AveragePrice
                     : 0;
+
                 // 检查止损和止盈条件
                 if (profitRatio <= -StopLossPercent)
                 {

@@ -15,6 +15,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
     {
         private readonly QCAlgorithm _algo;
         private HubConnection _connection;
+        Dictionary<Symbol, TradingSignal> Buyrecod = new Dictionary<Symbol, TradingSignal>();
         public OrderExecutor(QCAlgorithm algorithm)
         {
             _algo = algorithm;
@@ -79,10 +80,34 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
                 switch (signal.Direction)
                 {
                     case OrderDirection.Buy:
+                        // 存储买入信号
+                        Buyrecod[symbol] = signal;
                         HandleBuy(signal, holding, logHeader);
                         break;
                     case OrderDirection.Sell:
-                        HandleSell(signal, holding, logHeader);
+                        // 卖出和买入在同一天,则退出
+                        if (signal.SignalTime.Date == Buyrecod[symbol].SignalTime.Date)
+                        {
+                            break;
+                        }
+                        // 如果是止盈，则必须是收盘14:55卖出
+                        if (signal.OperationReson == "TakeProfit")
+                        {
+                            if (signal.SignalTime.Hour == 14 && signal.SignalTime.Minute == 55)
+                            {
+                                HandleSell(signal, holding, logHeader);
+                                Buyrecod.Remove(symbol); // 只有真正卖出才清理
+                            }
+                            else
+                            {
+                                _algo.Debug($"{logHeader} ⚠ 止盈信号必须在14:55执行");
+                            }
+                        }
+                        else
+                        {
+                            HandleSell(signal, holding, logHeader);
+                            Buyrecod.Remove(symbol); // 只有真正卖出才清理
+                        }
                         break;
                     case OrderDirection.Hold:
                         //HandleHold(logHeader);
