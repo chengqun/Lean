@@ -84,9 +84,9 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
                     case OrderDirection.Sell:
                         HandleSell(signal, holding, logHeader);
                         break;
-                    // case OrderDirection.Hold:
-                    //     HandleHold(logHeader);
-                    //     break;
+                    case OrderDirection.Hold:
+                        //HandleHold(logHeader);
+                        break;
                 }
             }
             await Task.CompletedTask;

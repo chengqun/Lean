@@ -24,22 +24,10 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Risk
             {
                 var symbol = holding.Symbol;
                 var currentPrice = portfolio.Securities[symbol].Price;
-                // 检查平均价格是否为零，避免除零错误
-                var profitRatio = holding.AveragePrice != 0 
-                    ? (currentPrice - holding.AveragePrice) / holding.AveragePrice 
+                // 检查买入成本价是否为零，避免除零错误
+                var profitRatio = holding.AveragePrice != 0
+                    ? (currentPrice - holding.AveragePrice) / holding.AveragePrice
                     : 0;
-                // // 检查止损和止盈条件
-                // // 设置持股时间，到时间了自动清仓
-                // if (holding.HoldingsPeriod.TotalDays > 30)
-                // {
-                //     risks.Add(new RiskSignal
-                //     {
-                //         Symbol = symbol,
-                //         Direction = OrderDirection.Sell,
-                //         Action = RiskAction.TimeStopLoss,
-                //         TriggerPrice = currentPrice
-                //     });
-                // }
                 // 检查止损和止盈条件
                 if (profitRatio <= -StopLossPercent)
                 {

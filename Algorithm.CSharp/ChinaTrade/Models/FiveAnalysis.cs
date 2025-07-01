@@ -300,8 +300,6 @@ public class FiveAnalysis
               && MinutePriceBreakout==true// 9点45 弱转强
             ;
 
-             
-
             TradingSignal = new TradingSignal()
             {
                 Symbol = Symbol,
@@ -317,6 +315,7 @@ public class FiveAnalysis
                 //935 
                 ConvertToChinaTime(MinuteClose.Current?.EndTime ?? DateTime.MinValue) == _algo.Time.Date.AddHours(9).AddMinutes(35)
                 && MinutePriceBreakout == true
+                && DayStrategyName.Current?.Value == 1 // 长上影试盘战法
             )
             {
                 TradingSignal.Direction = OrderDirection.Buy;
