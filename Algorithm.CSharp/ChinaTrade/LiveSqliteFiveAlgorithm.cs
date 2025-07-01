@@ -47,11 +47,10 @@ public class LiveSqliteFiveAlgorithm : QCAlgorithm
         SetStartDate(2024, 1, 1);
         SetEndDate(2025, 12, 31);
         // 设置基准货币为人民币
-        // SetAccountCurrency("CNY");
-        // // 初始化CNY现金账户（假设初始金额为10万）
-        // SetCash("CNY", 10000000);
-        // 初始化金额
-        SetCash(10000000);
+        // 设置基准货币为人民币
+        SetAccountCurrency("CNY");
+        // 初始化CNY现金账户（假设初始金额为20万）
+        SetCash("CNY", 200000);
         SetTimeZone(TimeZones.Utc);
         // 设置手续费模型
         SetBrokerageModel(new AStockBrokerageModel());
@@ -80,9 +79,18 @@ public class LiveSqliteFiveAlgorithm : QCAlgorithm
 
     private void InitializeData()
     {
+        int size = 20; // 每份的个数，可根据需要调整
+        int part = 0; // 当前分片的索引
         var DatabasePath = Path.Combine(Globals.DataFolder, "AAshares", "QuantConnectBase.db3");
         var table1 = new SQLiteDataStorage<LiveStock>(DatabasePath);
         var gupiao = table1.GetItemsAsync().Result;
+        var partFilePath = System.IO.Path.Combine(Globals.DataFolder, "AAshares", "part.txt");
+        if (System.IO.File.Exists(partFilePath))
+        {
+            var partText = System.IO.File.ReadAllText(partFilePath).Trim();
+            int.TryParse(partText, out part);
+        }
+        var partItems = gupiao.Skip(part * size).Take(size).ToList();
         foreach (var item in gupiao)
         {
             var code = item.Code.ToString();
