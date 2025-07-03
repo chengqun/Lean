@@ -313,8 +313,9 @@ public class FiveAnalysis
             // 判断要买
             if (
                 //935 
-                ConvertToChinaTime(MinuteClose.Current?.EndTime ?? DateTime.MinValue) == _algo.Time.Date.AddHours(9).AddMinutes(35)
-                && MinutePriceBreakout == true
+                //ConvertToChinaTime(MinuteClose.Current?.EndTime ?? DateTime.MinValue) == _algo.Time.Date.AddHours(9).AddMinutes(35)
+                //&& 
+                MinutePriceBreakout == true
                 && DayStrategyName.Current?.Value == 1 // 长上影试盘战法
             )
             {
