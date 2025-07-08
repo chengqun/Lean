@@ -22,6 +22,11 @@
   "symbol-second-limit": 10000,
   "symbol-tick-limit": 10000,
 
+
+  // Ignore unknown asset types from brokerages
+  "ignore-unknown-asset-holdings": true,
+
+
   // log missing data files, useful for debugging
   "show-missing-data-logs": false,
   "maximum-warmup-history-days-look-back": 5,
