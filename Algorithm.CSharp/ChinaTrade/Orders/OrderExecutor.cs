@@ -1,13 +1,13 @@
+using Microsoft.AspNetCore.SignalR.Client;
+using QuantConnect.Algorithm;
+using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
+using QuantConnect.Algorithm.CSharp.ChinaTrade.Models;
+using QuantConnect.Orders;
+using QuantConnect.Securities;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using QuantConnect.Algorithm.CSharp.ChinaTrade.Interfaces;
-using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.SignalR.Client;
-using QuantConnect.Algorithm;
-using QuantConnect.Orders;
-using QuantConnect.Securities;
+using static QuantConnect.Messages;
 
 namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
 {
@@ -116,7 +116,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
             }
             await Task.CompletedTask;
         }
-        private string BuildLogHeader(TradingSignal signal, SecurityHolding holding)
+        private string BuildLogHeader(TradingSignal signal, Securities.SecurityHolding holding)
         {
 
             return $"{signal.SignalTime} {signal.Symbol} day:--" 
@@ -127,7 +127,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
                 ;
         }
         // ...existing code...
-        protected virtual void HandleBuy(TradingSignal signal, SecurityHolding holding, string logHeader)
+        protected virtual void HandleBuy(TradingSignal signal, Securities.SecurityHolding holding, string logHeader)
         {
             // 不允许加仓：仅在当前无持仓时才买入，否则忽略
             var targetWeight = signal.Weight > 0 ? signal.Weight : 0.1m; // 默认0.1
@@ -142,7 +142,14 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
                 _algo.Debug($"{logHeader} ▶ 开仓{targetQuantity}股");
                 if (_algo.LiveMode)
                 {
-                    _connection?.InvokeAsync("SendOrder", signal.Direction.ToString(), signal.Symbol, price.ToString(), targetQuantity.ToString());
+                    var order = new OrderDto
+                    {
+                        StockCode = signal.Symbol.Value,
+                        Price = price,
+                        Quantity = targetQuantity,
+                        OrderType = signal.Direction.ToString()
+                    };
+                    _connection.InvokeAsync("PlaceOrder", order).Wait();
                 }
             }
             else
@@ -152,7 +159,7 @@ namespace QuantConnect.Algorithm.CSharp.ChinaTrade.Orders
         }
         // ...existing code...
 
-        protected virtual void HandleSell(TradingSignal signal, SecurityHolding holding, string logHeader)
+        protected virtual void HandleSell(TradingSignal signal, Securities.SecurityHolding holding, string logHeader)
         {
             if (holding.Invested)
             {
